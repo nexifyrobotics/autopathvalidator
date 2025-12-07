@@ -15,10 +15,10 @@ function App() {
   const [fileName, setFileName] = useState("");
 
   const [constraints, setConstraints] = useState({
-    maxVelocity: 5.0,      // Competitive Swerve (MK4i L3 ~16.5 ft/s)
-    maxAcceleration: 4.0,  // Aggressive acceleration
-    maxJerk: 20.0,         // High jerk for responsiveness
-    maxCentripetal: 5.5    // High traction limit (prevents drifting)
+    maxVelocity: 3.8,      // KitBot/Everybot (~12.5 ft/s)
+    maxAcceleration: 2.5,  // Conservative acceleration
+    maxJerk: 10.0,         // Smooth control
+    maxCentripetal: 2.5    // Standard traction limit
   });
 
   const handleFileUpload = (json, name) => {
