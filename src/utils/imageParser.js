@@ -95,14 +95,15 @@ export class ImagePathAnalyzer {
         const sampledPoints = this.samplePoints(pathPixels, 100);
 
         // Convert pixels to meters
-        let trajectory = sampledPoints.map((point) => ({
-            x: (point.x - minX) * scaleX,
-            y: (maxY - point.y) * scaleY, // Flip Y
-            time: 0,
-            velocity: 0,
-            acceleration: 0,
-            rotation: 0
-        }));
+        let trajectory = sampledPoints.map((point, index) => {
+            return {
+                time: index * 0.05, // Placeholder, updated later loop
+                x: (point.x - minX) * scaleX,
+                y: (maxY - point.y) * scaleY // Flip Y
+                // Do NOT set velocity/acceleration/rotation to 0 here.
+                // Leave them undefined so calculateKinematics computes them from x/y/time.
+            };
+        });
 
         // Apply Spatial Smoothing (Moving Average on Position)
         // This is critical for image-derived paths

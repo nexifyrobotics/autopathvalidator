@@ -22,8 +22,21 @@ export function calculateKinematics(trajectory) {
             const dt = current.time - prev.time;
 
             if (dt > 0.0001) {
+                // Velocity Calculation (if missing)
+                if (calcVel === undefined || calcVel === null) {
+                    const dx = current.x - prev.x;
+                    const dy = current.y - prev.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    calcVel = dist / dt;
+                }
+
+                // Get previous velocity (use calculated if available)
+                const prevVel = enriched[i - 1].calculatedVelocity !== undefined
+                    ? enriched[i - 1].calculatedVelocity
+                    : prev.velocity;
+
                 // Acceleration
-                const dv = current.velocity - prev.velocity;
+                const dv = calcVel - prevVel;
                 const rawAccel = dv / dt;
 
                 // If acceleration is provided in JSON, use it. Otherwise use raw.
@@ -74,6 +87,7 @@ export function calculateKinematics(trajectory) {
 
     // Apply stronger smoothing to Accel (window 5) and aggressive to Jerk (window 11)
     // Only smooth if we calculated them ourselves (if source didn't provide good data)
+    enriched = smooth(enriched, 'calculatedVelocity', 3);
     enriched = smooth(enriched, 'calculatedAccel', 5);
     enriched = smooth(enriched, 'calculatedJerk', 11);
 
