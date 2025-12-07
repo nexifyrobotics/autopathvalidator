@@ -6,8 +6,9 @@
 export function calculateKinematics(trajectory) {
     if (!trajectory || trajectory.length < 2) return [];
 
-    const enriched = [];
+    let enriched = [];
 
+    // 1. First Pass: Calculate Raw Derivatives
     for (let i = 0; i < trajectory.length; i++) {
         const current = trajectory[i];
 
@@ -20,35 +21,61 @@ export function calculateKinematics(trajectory) {
             const prev = trajectory[i - 1];
             const dt = current.time - prev.time;
 
-            if (dt > 0.0001) { // Avoid divide by zero
-                // Calculate Acceleration (change in velocity)
+            if (dt > 0.0001) {
+                // Acceleration
                 const dv = current.velocity - prev.velocity;
-                calcAccel = dv / dt;
+                const rawAccel = dv / dt;
 
-                // Calculate Jerk (change in acceleration)
-                const prevAccel = prev.acceleration || 0;
-                const currAccel = current.acceleration || calcAccel;
-                const da = currAccel - prevAccel;
+                // If acceleration is provided in JSON, use it. Otherwise use raw.
+                calcAccel = (current.acceleration !== undefined && current.acceleration !== 0)
+                    ? current.acceleration
+                    : rawAccel;
+
+                // Jerk (derivative of acceleration)
+                // Use the PREVIOUS calculated acceleration for continuity
+                const prevAccel = enriched[i - 1].calculatedAccel;
+                const da = calcAccel - prevAccel;
                 calcJerk = da / dt;
 
                 // Angular Velocity
                 let dRot = current.rotation - prev.rotation;
-                // Normalize angle diff to -PI to PI
                 while (dRot > Math.PI) dRot -= 2 * Math.PI;
                 while (dRot < -Math.PI) dRot += 2 * Math.PI;
-
                 calcAngVel = dRot / dt;
             }
         }
 
         enriched.push({
             ...current,
-            calculatedVelocity: calcVel,
-            calculatedAccel: calcAccel,
-            calculatedJerk: calcJerk,
-            calculatedAngVel: calcAngVel
+            calculatedAccel: calcAccel || 0,
+            calculatedJerk: calcJerk || 0,
+            calculatedAngVel: calcAngVel,
+            rawAccel: calcAccel || 0 // Keep raw for debug if needed
         });
     }
+
+    // 2. Second Pass: Apply Smoothing (Moving Average)
+    // Smoothing is crucial because finite difference derivatives are very noisy
+    const smooth = (arr, key, windowSize) => {
+        const result = [...arr];
+        for (let i = 0; i < arr.length; i++) {
+            let sum = 0;
+            let count = 0;
+            for (let j = -Math.floor(windowSize / 2); j <= Math.floor(windowSize / 2); j++) {
+                if (i + j >= 0 && i + j < arr.length) {
+                    sum += arr[i + j][key];
+                    count++;
+                }
+            }
+            result[i][key] = sum / count;
+        }
+        return result;
+    };
+
+    // Apply light smoothing to Accel (window 3) and stronger to Jerk (window 5)
+    // Only smooth if we calculated them ourselves (if source didn't provide good data)
+    enriched = smooth(enriched, 'calculatedAccel', 3);
+    enriched = smooth(enriched, 'calculatedJerk', 5);
 
     return enriched;
 }
