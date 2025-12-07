@@ -18,22 +18,30 @@ export class ImagePathAnalyzer {
 
         const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
-        // Extract path lines with more accurate color ranges for PathPlanner
-        // Blue alliance path: RGB around (50-100, 100-200, 200-255)
-        // Red alliance path: RGB around (200-255, 50-100, 50-100)
+        // Extract path lines
+        // 1. Blue Alliance Path (Blueish)
         const bluePath = this.extractPathByColorRange(imageData,
             { r: [30, 120], g: [80, 180], b: [180, 255] }
         );
+        // 2. Red Alliance Path (Redish)
         const redPath = this.extractPathByColorRange(imageData,
             { r: [180, 255], g: [30, 120], b: [30, 120] }
         );
+        // 3. White/Light Gray Path (Common in PathPlanner screenshots)
+        // RGB > 200, 200, 200
+        const whitePath = this.extractPathByColorRange(imageData,
+            { r: [180, 255], g: [180, 255], b: [180, 255] }
+        );
 
-        // Combine paths and sort by position
-        let allPaths = [...bluePath, ...redPath];
-        allPaths.sort((a, b) => a.x - b.x); // Sort combined path by x-coordinate
+        // Combine paths and sort by position (remove duplicates ideally, but simple merge for now)
+        let allPaths = [...bluePath, ...redPath, ...whitePath];
+
+        // Remove noise/scattered pixels by density or simple outlier removal could go here
+        // For now, just sort by X
+        allPaths.sort((a, b) => a.x - b.x);
 
         if (allPaths.length === 0) {
-            throw new Error("No path detected in image. Make sure the path lines are clearly visible (blue or red).");
+            throw new Error("No path detected. Please ensure the path line (white, blue, or red) is clearly visible.");
         }
 
         // Convert pixel coordinates to trajectory
@@ -53,7 +61,6 @@ export class ImagePathAnalyzer {
                 const g = pixels[index + 1];
                 const b = pixels[index + 2];
 
-                // Check if pixel is within color range
                 if (
                     r >= colorRange.r[0] && r <= colorRange.r[1] &&
                     g >= colorRange.g[0] && g <= colorRange.g[1] &&
@@ -63,19 +70,15 @@ export class ImagePathAnalyzer {
                 }
             }
         }
-
-        // Sort by x coordinate to get path order
-        return pathPixels.sort((a, b) => a.x - b.x);
+        return pathPixels;
     }
 
     pixelsToTrajectory(pathPixels) {
         if (pathPixels.length < 2) return [];
 
-        // Assume standard FRC field: 16.54m x 8.21m (54'2" x 26'11")
         const FIELD_WIDTH_M = 16.54;
         const FIELD_HEIGHT_M = 8.21;
 
-        // Find image bounds (assuming field fills most of image)
         const minX = Math.min(...pathPixels.map(p => p.x));
         const maxX = Math.max(...pathPixels.map(p => p.x));
         const minY = Math.min(...pathPixels.map(p => p.y));
@@ -84,50 +87,63 @@ export class ImagePathAnalyzer {
         const pixelWidth = maxX - minX;
         const pixelHeight = maxY - minY;
 
-        const scaleX = FIELD_WIDTH_M / pixelWidth;
-        const scaleY = FIELD_HEIGHT_M / pixelHeight;
+        // Prevent division by zero if path is vertical/horizontal line
+        const scaleX = pixelWidth > 0 ? FIELD_WIDTH_M / pixelWidth : 1;
+        const scaleY = pixelHeight > 0 ? FIELD_HEIGHT_M / pixelHeight : 1;
 
-        // Sample points (reduce density for performance)
+        // Sample points to reduce count
         const sampledPoints = this.samplePoints(pathPixels, 100);
 
-        // Convert to trajectory states
-        const trajectory = sampledPoints.map((point, i) => {
-            // Convert pixel to meters
-            const x = (point.x - minX) * scaleX;
-            const y = (maxY - point.y) * scaleY; // Flip Y (image coords are top-down)
+        // Convert pixels to meters
+        let trajectory = sampledPoints.map((point) => ({
+            x: (point.x - minX) * scaleX,
+            y: (maxY - point.y) * scaleY, // Flip Y
+            time: 0,
+            velocity: 0,
+            acceleration: 0,
+            rotation: 0
+        }));
 
-            // Estimate velocity and acceleration from spacing
-            let velocity = 0;
-            let acceleration = 0;
-            let rotation = 0;
-
-            if (i > 0) {
-                const prev = sampledPoints[i - 1];
-                const prevX = (prev.x - minX) * scaleX;
-                const prevY = (maxY - prev.y) * scaleY;
-
-                const dx = x - prevX;
-                const dy = y - prevY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-
-                // Assume constant time step (0.02s = 50Hz typical)
-                const dt = 0.02;
-                velocity = dist / dt;
-
-                // Calculate heading
-                rotation = Math.atan2(dy, dx);
+        // Apply Spatial Smoothing (Moving Average on Position)
+        // This is critical for image-derived paths
+        const smoothSpatial = (arr, key, windowSize) => {
+            const result = [...arr];
+            for (let i = 0; i < arr.length; i++) {
+                let sum = 0;
+                let count = 0;
+                for (let j = -Math.floor(windowSize / 2); j <= Math.floor(windowSize / 2); j++) {
+                    if (i + j >= 0 && i + j < arr.length) {
+                        sum += arr[i + j][key];
+                        count++;
+                    }
+                }
+                result[i] = { ...result[i], [key]: sum / count };
             }
+            return result;
+        };
 
-            return {
-                time: i * 0.02,
-                x,
-                y,
-                rotation,
-                velocity,
-                acceleration,
-                curvature: 0 // Will be calculated later
-            };
-        });
+        // Aggressive smoothing for coordinates (Window 7)
+        trajectory = smoothSpatial(trajectory, 'x', 7);
+        trajectory = smoothSpatial(trajectory, 'y', 7);
+
+        // Estimate Time based on smoothed distance using a Target Velocity
+        // Using KitBot conservative max speed as target avg speed
+        const targetVel = 2.0;
+        let currentTime = 0;
+
+        trajectory[0].time = 0;
+        for (let i = 1; i < trajectory.length; i++) {
+            const dx = trajectory[i].x - trajectory[i - 1].x;
+            const dy = trajectory[i].y - trajectory[i - 1].y;
+            const dist = Math.hypot(dx, dy);
+
+            // Avoid zero-time steps
+            let dt = dist / targetVel;
+            if (dt < 0.02) dt = 0.02; // Minimum 20ms step
+
+            currentTime += dt;
+            trajectory[i].time = currentTime;
+        }
 
         return trajectory;
     }
