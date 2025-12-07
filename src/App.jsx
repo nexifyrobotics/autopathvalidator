@@ -123,6 +123,36 @@ function App() {
           </>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-neutral-800 border-t border-neutral-700 mt-12">
+        <div className="max-w-[1920px] mx-auto px-8 py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Logo and Team Info */}
+            <div className="flex items-center gap-4">
+              <img
+                src="./nexify-logo.jpg"
+                alt="Nexify Robotics"
+                className="h-12 w-12 object-contain rounded-lg"
+              />
+              <div>
+                <p className="text-white font-bold text-lg">Nexify Robotics</p>
+                <p className="text-gray-400 text-sm">#10185</p>
+              </div>
+            </div>
+
+            {/* Additional Info */}
+            <div className="text-center md:text-right">
+              <p className="text-gray-400 text-sm">
+                Auto Path Validator v0.1.0
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                Built for FRC Teams
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
