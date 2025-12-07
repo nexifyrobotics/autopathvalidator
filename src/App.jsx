@@ -113,7 +113,6 @@ function App() {
                 data={trajectoryData}
                 constraints={constraints}
                 violations={violations}
-                key={`${constraints.maxVelocity}-${constraints.maxAcceleration}-${constraints.maxJerk}`}
               />
             </div>
 

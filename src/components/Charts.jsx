@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ScatterChart, Scatter, ZAxis } from 'recharts';
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -18,13 +18,17 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export function Charts({ data, constraints, violations }) {
+    const [chartKey, setChartKey] = useState(0);
+
+    // Force re-render when constraints change
+    useEffect(() => {
+        setChartKey(prev => prev + 1);
+    }, [constraints]);
+
     if (!data || data.length === 0) return <div className="text-gray-500 text-center mt-10">No data to display</div>;
 
-    // Prepare violation markers for charts?
-    // Maybe just plot data and reference lines for constraints.
-
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6" key={chartKey}>
             {/* Velocity Chart */}
             <div className="bg-neutral-800 p-4 rounded-lg shadow-lg">
                 <h3 className="text-white mb-2 font-semibold">Velocity Profile</h3>
