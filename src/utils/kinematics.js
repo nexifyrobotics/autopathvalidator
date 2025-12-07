@@ -72,10 +72,10 @@ export function calculateKinematics(trajectory) {
         return result;
     };
 
-    // Apply light smoothing to Accel (window 3) and stronger to Jerk (window 5)
+    // Apply stronger smoothing to Accel (window 5) and aggressive to Jerk (window 11)
     // Only smooth if we calculated them ourselves (if source didn't provide good data)
-    enriched = smooth(enriched, 'calculatedAccel', 3);
-    enriched = smooth(enriched, 'calculatedJerk', 5);
+    enriched = smooth(enriched, 'calculatedAccel', 5);
+    enriched = smooth(enriched, 'calculatedJerk', 11);
 
     return enriched;
 }
