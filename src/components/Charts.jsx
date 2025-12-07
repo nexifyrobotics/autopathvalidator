@@ -37,7 +37,11 @@ export function Charts({ data, constraints, violations }) {
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                             <XAxis dataKey="time" stroke="#888" />
-                            <YAxis stroke="#888" label={{ value: 'Vel (m/s)', angle: -90, position: 'insideLeft' }} />
+                            <YAxis
+                                stroke="#888"
+                                label={{ value: 'Vel (m/s)', angle: -90, position: 'insideLeft' }}
+                                domain={[0, Math.max(5, constraints.maxVelocity + 0.5)]}
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             <ReferenceLine y={constraints.maxVelocity} stroke="red" strokeDasharray="3 3" label="Max Vel" />
@@ -55,7 +59,11 @@ export function Charts({ data, constraints, violations }) {
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                             <XAxis dataKey="time" stroke="#888" />
-                            <YAxis stroke="#888" label={{ value: 'Acc (m/s²)', angle: -90, position: 'insideLeft' }} />
+                            <YAxis
+                                stroke="#888"
+                                label={{ value: 'Acc (m/s²)', angle: -90, position: 'insideLeft' }}
+                                domain={[-Math.max(4, constraints.maxAcceleration + 1), Math.max(4, constraints.maxAcceleration + 1)]}
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             <ReferenceLine y={constraints.maxAcceleration} stroke="red" strokeDasharray="3 3" label="Max Acc" />
@@ -74,7 +82,11 @@ export function Charts({ data, constraints, violations }) {
                         <LineChart data={data}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                             <XAxis dataKey="time" stroke="#888" />
-                            <YAxis stroke="#888" label={{ value: 'Jerk (m/s³)', angle: -90, position: 'insideLeft' }} />
+                            <YAxis
+                                stroke="#888"
+                                label={{ value: 'Jerk (m/s³)', angle: -90, position: 'insideLeft' }}
+                                domain={[-Math.max(20, constraints.maxJerk + 5), Math.max(20, constraints.maxJerk + 5)]}
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             {constraints.maxJerk > 0 &&
