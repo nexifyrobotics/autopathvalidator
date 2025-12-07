@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/autopathvalidator/', // GitHub Pages repository name
+  base: './', // Use relative paths for GitHub Pages
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
