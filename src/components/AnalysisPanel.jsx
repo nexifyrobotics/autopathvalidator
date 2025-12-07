@@ -58,9 +58,33 @@ export function AnalysisPanel({ violations }) {
 
                             <p className="text-gray-200 text-sm mb-2">{v.message}</p>
 
+                            {v.impact && (
+                                <div className="flex items-start gap-2 mt-2 p-2 bg-red-900/20 border border-red-800/50 rounded">
+                                    <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                                    <p className="text-red-300 text-xs font-medium">{v.impact}</p>
+                                </div>
+                            )}
+
                             <div className="flex items-start gap-2 mt-2 p-2 bg-neutral-900/50 rounded">
                                 <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                                <p className="text-blue-300 text-xs">{v.suggestion}</p>
+                                <div className="text-blue-300 text-xs space-y-1.5">
+                                    {v.suggestion && (() => {
+                                        // Split by numbered items (1), 2), etc.)
+                                        const parts = v.suggestion.split(/(?=\d+\))/).filter(s => s.trim());
+                                        if (parts.length === 0) {
+                                            return <p className="leading-relaxed">{v.suggestion}</p>;
+                                        }
+                                        return parts.map((rec, idx) => {
+                                            const trimmed = rec.trim();
+                                            if (!trimmed) return null;
+                                            return (
+                                                <p key={idx} className="leading-relaxed">
+                                                    {trimmed}
+                                                </p>
+                                            );
+                                        });
+                                    })()}
+                                </div>
                             </div>
                         </div>
                     );
