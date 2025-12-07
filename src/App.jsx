@@ -15,10 +15,10 @@ function App() {
   const [fileName, setFileName] = useState("");
 
   const [constraints, setConstraints] = useState({
-    maxVelocity: 4.5,
-    maxAcceleration: 3.5,
-    maxJerk: 10.0,
-    maxCentripetal: 3.0 // roughly
+    maxVelocity: 4.8,      // Typical FRC Swerve: ~4.5-5.0 m/s
+    maxAcceleration: 3.5,  // Good acceleration: ~3-4 m/s²
+    maxJerk: 15.0,        // Reasonable jerk limit
+    maxCentripetal: 4.0   // High friction wheels can handle ~4 m/s²
   });
 
   const handleFileUpload = (json, name) => {
