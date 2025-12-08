@@ -5,7 +5,7 @@ import { MapPin } from 'lucide-react';
 const FIELD_WIDTH = 16.54;
 const FIELD_HEIGHT = 8.21;
 
-export function FieldOverlay({ trajectoryData, violations, analysisData = null }) {
+export function FieldOverlay({ trajectoryData, violations }) {
     const canvasRef = useRef(null);
 
     useEffect(() => {
@@ -56,39 +56,27 @@ export function FieldOverlay({ trajectoryData, violations, analysisData = null }
 
         // Draw path
         if (trajectoryData.length > 1) {
-            // Draw the path with highlighting for problem areas
+            ctx.strokeStyle = '#8884d8';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
             const firstPoint = trajectoryData[0];
-            const startX = offsetX + (firstPoint.x || 0) * scaleX;
-            const startY = offsetY + (FIELD_HEIGHT - (firstPoint.y || 0)) * scaleY;
+            const x1 = offsetX + (firstPoint.x || 0) * scaleX;
+            const y1 = offsetY + (FIELD_HEIGHT - (firstPoint.y || 0)) * scaleY; // Flip Y
+            ctx.moveTo(x1, y1);
 
             for (let i = 1; i < trajectoryData.length; i++) {
                 const point = trajectoryData[i];
-                const prevPoint = trajectoryData[i - 1];
                 const x = offsetX + (point.x || 0) * scaleX;
-                const y = offsetY + (FIELD_HEIGHT - (point.y || 0)) * scaleY;
-                const prevX = offsetX + (prevPoint.x || 0) * scaleX;
-                const prevY = offsetY + (FIELD_HEIGHT - (prevPoint.y || 0)) * scaleY;
-
-                // Determine color based on analysis or violations
-                let pathColor = '#8884d8';
-                if (analysisData && i >= analysisData.problemStartIndex) {
-                    pathColor = '#ef4444'; // Red for problem area
-                } else if (violations.some(v => Math.abs((v.time || 0) - (point.time || 0)) < 0.1)) {
-                    pathColor = '#f59e0b'; // Yellow for violations
-                }
-
-                ctx.strokeStyle = pathColor;
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(prevX, prevY);
+                const y = offsetY + (FIELD_HEIGHT - (point.y || 0)) * scaleY; // Flip Y
                 ctx.lineTo(x, y);
-                ctx.stroke();
             }
+            ctx.stroke();
 
             // Draw start point
             ctx.fillStyle = '#10b981';
             ctx.beginPath();
-            ctx.arc(startX, startY, 6, 0, 2 * Math.PI);
+            ctx.arc(x1, y1, 6, 0, 2 * Math.PI);
             ctx.fill();
 
             // Draw end point
@@ -99,28 +87,6 @@ export function FieldOverlay({ trajectoryData, violations, analysisData = null }
             ctx.beginPath();
             ctx.arc(x2, y2, 6, 0, 2 * Math.PI);
             ctx.fill();
-        }
-
-        // Draw analysis problem point marker
-        if (analysisData && analysisData.problemStartIndex >= 0) {
-            const problemPoint = trajectoryData[analysisData.problemStartIndex];
-            if (problemPoint) {
-                const x = offsetX + (problemPoint.x || 0) * scaleX;
-                const y = offsetY + (FIELD_HEIGHT - (problemPoint.y || 0)) * scaleY;
-                
-                // Draw outer circle for problem marker
-                ctx.strokeStyle = '#ef4444';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(x, y, 10, 0, 2 * Math.PI);
-                ctx.stroke();
-
-                // Draw inner circle
-                ctx.fillStyle = '#ef4444';
-                ctx.beginPath();
-                ctx.arc(x, y, 6, 0, 2 * Math.PI);
-                ctx.fill();
-            }
         }
 
         // Draw violation points
@@ -146,7 +112,7 @@ export function FieldOverlay({ trajectoryData, violations, analysisData = null }
         ctx.fillText(`${FIELD_WIDTH.toFixed(1)}m`, offsetX + FIELD_WIDTH * scaleX - 40, offsetY + 15);
         ctx.fillText(`${FIELD_HEIGHT.toFixed(1)}m`, offsetX - 50, offsetY + FIELD_HEIGHT * scaleY);
 
-    }, [trajectoryData, violations, analysisData]);
+    }, [trajectoryData, violations]);
 
     if (!trajectoryData || trajectoryData.length === 0) {
         return (
@@ -174,15 +140,9 @@ export function FieldOverlay({ trajectoryData, violations, analysisData = null }
                         <div className="w-3 h-3 rounded-full bg-red-500"></div>
                         <span>End</span>
                     </div>
-                    {analysisData && analysisData.problemStartIndex >= 0 && (
-                        <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 rounded-full bg-red-500 border border-red-300"></div>
-                            <span>Problem Start</span>
-                        </div>
-                    )}
                     <div className="flex items-center gap-1">
                         <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <span>Violations</span>
+                        <span>Issues</span>
                     </div>
                 </div>
             </div>
