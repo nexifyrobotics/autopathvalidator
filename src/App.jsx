@@ -12,6 +12,7 @@ import { LanguageSelector } from './components/LanguageSelector'
 import { HistoryPanel } from './components/HistoryPanel'
 import { ShareDialog } from './components/ShareDialog'
 import { OptimizationPanel } from './components/OptimizationPanel'
+import { RouteAnalysisPanel } from './components/RouteAnalysisPanel'
 import { parseTrajectory } from './utils/parser'
 import { calculateKinematics } from './utils/kinematics'
 import { validateTrajectory } from './utils/validator'
@@ -20,7 +21,8 @@ import { setupKeyboardShortcuts } from './utils/keyboardShortcuts'
 import { saveToHistory } from './utils/history'
 import { getInitialTheme, applyTheme } from './utils/theme'
 import { parseShareURL } from './utils/shareUtils'
-import { Activity, Loader2, History, Share2, Sun, Moon, Github, Sparkles } from 'lucide-react'
+import { analyzeRouteForProblems } from './utils/routeAnalyzer'
+import { Activity, Loader2, History, Share2, Sun, Moon, Github, Sparkles, AlertTriangle } from 'lucide-react'
 
 function App() {
   const [trajectoryData, setTrajectoryData] = useState([]);
@@ -34,6 +36,8 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showOptimization, setShowOptimization] = useState(false);
+  const [showRouteAnalysis, setShowRouteAnalysis] = useState(false);
+  const [routeAnalysis, setRouteAnalysis] = useState(null);
   const fileInputRef = useRef(null);
 
   const [constraints, setConstraints] = useState({
@@ -121,6 +125,13 @@ function App() {
     showToast('Loaded from history', 'success');
   };
 
+  // Analyze route when data or constraints change
+  useEffect(() => {
+    if (trajectoryData.length > 0) {
+      const analysis = analyzeRouteForProblems(trajectoryData, constraints);
+      setRouteAnalysis(analysis);
+    }
+  }, [trajectoryData, constraints]);
 
   // Re-run validation if constraints change
   useEffect(() => {
@@ -143,6 +154,21 @@ function App() {
             <span className="text-sm text-gray-500 font-mono">{t('version', language)}</span>
           </div>
           <div className="flex items-center gap-3">
+            {trajectoryData.length > 0 && routeAnalysis && (
+              <button
+                onClick={() => setShowRouteAnalysis(true)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  routeAnalysis.severity === 'critical'
+                    ? 'bg-red-600 hover:bg-red-700'
+                    : routeAnalysis.severity === 'warning'
+                    ? 'bg-yellow-600 hover:bg-yellow-700'
+                    : 'bg-green-600 hover:bg-green-700'
+                } text-white`}
+                title="Analyze Route for Problems"
+              >
+                <AlertTriangle className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={() => setShowOptimization(!showOptimization)}
               className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
@@ -281,7 +307,8 @@ function App() {
             {/* Field Overlay */}
             <FieldOverlay 
               trajectoryData={trajectoryData} 
-              violations={violations} 
+              violations={violations}
+              analysisData={routeAnalysis}
             />
 
             {/* Charts Grid */}
@@ -332,6 +359,15 @@ function App() {
           violations={violations}
           constraints={constraints}
           onClose={() => setShowOptimization(false)}
+        />
+      )}
+
+      {showRouteAnalysis && trajectoryData.length > 0 && routeAnalysis && (
+        <RouteAnalysisPanel
+          trajectoryData={trajectoryData}
+          violations={violations}
+          constraints={constraints}
+          onClose={() => setShowRouteAnalysis(false)}
         />
       )}
 
