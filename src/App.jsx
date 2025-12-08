@@ -186,7 +186,7 @@ function App() {
             </button>
             <LanguageSelector currentLang={language} onLanguageChange={setLanguage} />
             <a
-              href="https://github.com/nexify-robotics/autopathvalidator"
+              href="https://github.com/nexifyrobotics/autopathvalidator"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors"
