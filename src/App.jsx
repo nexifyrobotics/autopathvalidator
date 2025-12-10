@@ -12,6 +12,7 @@ import { LanguageSelector } from './components/LanguageSelector'
 import { HistoryPanel } from './components/HistoryPanel'
 import { ShareDialog } from './components/ShareDialog'
 import { OptimizationPanel } from './components/OptimizationPanel'
+import { RouteAnalyzer } from './components/RouteAnalyzer'
 import { parseTrajectory } from './utils/parser'
 import { calculateKinematics } from './utils/kinematics'
 import { validateTrajectory } from './utils/validator'
@@ -20,7 +21,7 @@ import { setupKeyboardShortcuts } from './utils/keyboardShortcuts'
 import { saveToHistory } from './utils/history'
 import { getInitialTheme, applyTheme } from './utils/theme'
 import { parseShareURL } from './utils/shareUtils'
-import { Activity, Loader2, History, Share2, Sun, Moon, Github, Sparkles } from 'lucide-react'
+import { Activity, Loader2, History, Share2, Sun, Moon, Github, Sparkles, Route } from 'lucide-react'
 
 function App() {
   const [trajectoryData, setTrajectoryData] = useState([]);
@@ -28,12 +29,12 @@ function App() {
   const [fileName, setFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  const [activeTab, setActiveTab] = useState('analysis');
   const [language, setLanguage] = useState(getInitialLanguage());
   const [theme, setTheme] = useState(getInitialTheme());
   const [showHistory, setShowHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showOptimization, setShowOptimization] = useState(false);
+  const [activeView, setActiveView] = useState('analysis'); // 'analysis', 'route', or 'compare'
   const fileInputRef = useRef(null);
 
   const [constraints, setConstraints] = useState({
@@ -65,7 +66,8 @@ function App() {
         setShowOptimization(false);
       },
       onSwitchTab: (index) => {
-        setActiveTab(index === 0 ? 'analysis' : 'compare');
+        const views = ['analysis', 'route', 'compare'];
+        setActiveView(views[Math.min(index, views.length - 1)]);
       }
     });
     return cleanup;
@@ -88,9 +90,17 @@ function App() {
   const handleFileUpload = (json, name) => {
     setIsLoading(true);
     try {
+      console.log('📁 File uploaded:', name);
+      console.log('📊 Raw JSON:', json);
+      
       const rawTrajectory = parseTrajectory(json);
+      console.log('✅ Parsed trajectory:', rawTrajectory);
+      
       const enrichedTrajectory = calculateKinematics(rawTrajectory);
+      console.log('✅ Enriched trajectory:', enrichedTrajectory);
+      
       const v = validateTrajectory(enrichedTrajectory, constraints);
+      console.log('✅ Violations:', v);
 
       setTrajectoryData(enrichedTrajectory);
       setFileName(name);
@@ -106,7 +116,8 @@ function App() {
 
       showToast(t('loaded', language) + ': ' + name, 'success');
     } catch (err) {
-      console.error(err);
+      console.error('❌ Error during file upload:', err);
+      console.error('Stack:', err.stack);
       showToast(t('error', language) + ': ' + err.message, 'error');
     } finally {
       setIsLoading(false);
@@ -220,24 +231,38 @@ function App() {
         {trajectoryData.length > 0 && (
           <div className="flex gap-2 border-b border-neutral-700">
             <button
-              onClick={() => setActiveTab('analysis')}
-              className={`px-4 py-2 font-medium transition-colors ${
-                activeTab === 'analysis'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-gray-300'
+              onClick={() => setActiveView('analysis')}
+              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
+                activeView === 'analysis' 
+                  ? 'text-blue-400 border-b-2 border-blue-400' 
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
-              {t('analysis', language)}
+              <Activity className="w-4 h-4" />
+              <span>Analysis</span>
             </button>
+            
             <button
-              onClick={() => setActiveTab('compare')}
-              className={`px-4 py-2 font-medium transition-colors ${
-                activeTab === 'compare'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-gray-300'
+              onClick={() => setActiveView('route')}
+              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
+                activeView === 'route' 
+                  ? 'text-blue-400 border-b-2 border-blue-400' 
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
-              {t('comparePaths', language)}
+              <Route className="w-4 h-4" />
+              <span>Route Analysis</span>
+            </button>
+            
+            <button
+              onClick={() => setActiveView('compare')}
+              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
+                activeView === 'compare' 
+                  ? 'text-blue-400 border-b-2 border-blue-400' 
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <span>Compare</span>
             </button>
           </div>
         )}
@@ -261,29 +286,15 @@ function App() {
         )}
 
         {/* Analysis Tab */}
-        {trajectoryData.length > 0 && activeTab === 'analysis' && (
+        {trajectoryData.length > 0 && activeView === 'analysis' && (
           <>
             {/* Summary Dashboard */}
             <SummaryDashboard 
               key={`dashboard-${violations.length}-${violations.filter(v => v.severity === 'error').length}-${violations.filter(v => v.severity === 'warning').length}`}
-              trajectoryData={trajectoryData} 
-              violations={violations} 
-              constraints={constraints} 
+              trajectory={trajectoryData}
+              violations={violations}
+              constraints={constraints}
             />
-
-            {/* Advanced Analysis */}
-            <AdvancedAnalysis 
-              trajectoryData={trajectoryData} 
-              violations={violations} 
-              constraints={constraints} 
-            />
-
-            {/* Field Overlay */}
-            <FieldOverlay 
-              trajectoryData={trajectoryData} 
-              violations={violations} 
-            />
-
             {/* Charts Grid */}
             <div className="w-full">
               <EnhancedCharts
@@ -300,9 +311,23 @@ function App() {
           </>
         )}
 
+        {/* Route Analysis Tab */}
+        {trajectoryData.length > 0 && activeView === 'route' && (
+          <div className="space-y-6">
+            <RouteAnalyzer 
+              trajectory={trajectoryData}
+              violations={violations}
+              constraints={constraints}
+            />
+          </div>
+        )}
+
         {/* Compare Tab */}
-        {activeTab === 'compare' && (
-          <PathComparison constraints={constraints} />
+        {trajectoryData.length > 0 && activeView === 'compare' && (
+          <PathComparison 
+            trajectory={trajectoryData}
+            constraints={constraints} 
+          />
         )}
       </main>
 
