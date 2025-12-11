@@ -8,7 +8,6 @@ import { FieldOverlay } from './components/FieldOverlay'
 import { ExportButton } from './components/ExportButton'
 import { PathComparison } from './components/PathComparison'
 import { AdvancedAnalysis } from './components/AdvancedAnalysis'
-import { LanguageSelector } from './components/LanguageSelector'
 import { HistoryPanel } from './components/HistoryPanel'
 import { ShareDialog } from './components/ShareDialog'
 import { OptimizationPanel } from './components/OptimizationPanel'
@@ -16,12 +15,10 @@ import { RouteAnalyzer } from './components/RouteAnalyzer'
 import { parseTrajectory } from './utils/parser'
 import { calculateKinematics } from './utils/kinematics'
 import { validateTrajectory } from './utils/validator'
-import { getInitialLanguage, t } from './utils/i18n'
 import { setupKeyboardShortcuts } from './utils/keyboardShortcuts'
 import { saveToHistory } from './utils/history'
-import { getInitialTheme, applyTheme } from './utils/theme'
 import { parseShareURL } from './utils/shareUtils'
-import { Activity, Loader2, History, Share2, Sun, Moon, Github, Sparkles, Route } from 'lucide-react'
+import { Activity, Loader2, History, Share2, Github, Sparkles, Route } from 'lucide-react'
 
 function App() {
   const [trajectoryData, setTrajectoryData] = useState([]);
@@ -29,8 +26,6 @@ function App() {
   const [fileName, setFileName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  const [language, setLanguage] = useState(getInitialLanguage());
-  const [theme, setTheme] = useState(getInitialTheme());
   const [showHistory, setShowHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showOptimization, setShowOptimization] = useState(false);
@@ -44,22 +39,11 @@ function App() {
     maxCentripetal: 2.5
   });
 
-  // Initialize theme and language
-  useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem('preferredLanguage', language);
-  }, [theme, language]);
-
   // Setup keyboard shortcuts
   useEffect(() => {
     const cleanup = setupKeyboardShortcuts({
       onOpenFile: () => fileInputRef.current?.click(),
       onExport: () => {/* Export handled by ExportButton */},
-      onToggleTheme: () => {
-        const newTheme = theme === 'dark' ? 'light' : 'dark';
-        setTheme(newTheme);
-        applyTheme(newTheme);
-      },
       onEscape: () => {
         setShowHistory(false);
         setShowShare(false);
@@ -71,7 +55,7 @@ function App() {
       }
     });
     return cleanup;
-  }, [theme]);
+  }, []);
 
   // Check for share URL on mount
   useEffect(() => {
@@ -92,13 +76,13 @@ function App() {
     try {
       console.log('📁 File uploaded:', name);
       console.log('📊 Raw JSON:', json);
-      
+
       const rawTrajectory = parseTrajectory(json);
       console.log('✅ Parsed trajectory:', rawTrajectory);
-      
+
       const enrichedTrajectory = calculateKinematics(rawTrajectory);
       console.log('✅ Enriched trajectory:', enrichedTrajectory);
-      
+
       const v = validateTrajectory(enrichedTrajectory, constraints);
       console.log('✅ Violations:', v);
 
@@ -114,11 +98,11 @@ function App() {
         constraints: constraints
       });
 
-      showToast(t('loaded', language) + ': ' + name, 'success');
+      showToast('Loaded: ' + name, 'success');
     } catch (err) {
       console.error('❌ Error during file upload:', err);
       console.error('Stack:', err.stack);
-      showToast(t('error', language) + ': ' + err.message, 'error');
+      showToast('Error: ' + err.message, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -149,9 +133,9 @@ function App() {
           <div className="flex items-center gap-3">
             <Activity className="w-8 h-8 text-blue-500" />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              {t('appTitle', language)}
+              Auto Path Validator
             </h1>
-            <span className="text-sm text-gray-500 font-mono">{t('version', language)}</span>
+            <span className="text-sm text-gray-500 font-mono">v0.2.0</span>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -178,24 +162,12 @@ function App() {
               </button>
             )}
             {trajectoryData.length > 0 && (
-              <ExportButton 
-                trajectoryData={trajectoryData} 
-                violations={violations} 
-                constraints={constraints} 
+              <ExportButton
+                trajectoryData={trajectoryData}
+                violations={violations}
+                constraints={constraints}
               />
             )}
-            <button
-              onClick={() => {
-                const newTheme = theme === 'dark' ? 'light' : 'dark';
-                setTheme(newTheme);
-                applyTheme(newTheme);
-              }}
-              className="flex items-center gap-2 px-3 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors"
-              title="Toggle Theme (Ctrl+K)"
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            <LanguageSelector currentLang={language} onLanguageChange={setLanguage} />
             <a
               href="https://github.com/nexifyrobotics/autopathvalidator"
               target="_blank"
@@ -218,7 +190,7 @@ function App() {
             <div ref={fileInputRef}>
               <FileUpload onFileUpload={handleFileUpload} />
             </div>
-            {fileName && <p className="mt-2 text-sm text-center text-green-400">{t('loaded', language)}: {fileName}</p>}
+            {fileName && <p className="mt-2 text-sm text-center text-green-400">Loaded: {fileName}</p>}
           </div>
 
           {/* Constraints Block */}
@@ -233,36 +205,36 @@ function App() {
             <button
               onClick={() => setActiveView('analysis')}
               className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
-                activeView === 'analysis' 
-                  ? 'text-blue-400 border-b-2 border-blue-400' 
+                activeView === 'analysis'
+                  ? 'text-blue-400 border-b-2 border-blue-400'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
               <Activity className="w-4 h-4" />
               <span>Analysis</span>
             </button>
-            
+
             <button
               onClick={() => setActiveView('route')}
               className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
-                activeView === 'route' 
-                  ? 'text-blue-400 border-b-2 border-blue-400' 
+                activeView === 'route'
+                  ? 'text-blue-400 border-b-2 border-blue-400'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
               <Route className="w-4 h-4" />
               <span>Route Analysis</span>
             </button>
-            
+
             <button
               onClick={() => setActiveView('compare')}
               className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
-                activeView === 'compare' 
-                  ? 'text-blue-400 border-b-2 border-blue-400' 
+                activeView === 'compare'
+                  ? 'text-blue-400 border-b-2 border-blue-400'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              <span>Compare</span>
+              <span>Compare Paths</span>
             </button>
           </div>
         )}
@@ -271,7 +243,7 @@ function App() {
         {isLoading && (
           <div className="flex items-center justify-center p-12">
             <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-            <span className="ml-3 text-gray-400">{t('processing', language)}</span>
+            <span className="ml-3 text-gray-400">Processing trajectory...</span>
           </div>
         )}
 
@@ -289,7 +261,7 @@ function App() {
         {trajectoryData.length > 0 && activeView === 'analysis' && (
           <>
             {/* Summary Dashboard */}
-            <SummaryDashboard 
+            <SummaryDashboard
               key={`dashboard-${violations.length}-${violations.filter(v => v.severity === 'error').length}-${violations.filter(v => v.severity === 'warning').length}`}
               trajectory={trajectoryData}
               violations={violations}
@@ -314,7 +286,7 @@ function App() {
         {/* Route Analysis Tab */}
         {trajectoryData.length > 0 && activeView === 'route' && (
           <div className="space-y-6">
-            <RouteAnalyzer 
+            <RouteAnalyzer
               trajectory={trajectoryData}
               violations={violations}
               constraints={constraints}
@@ -324,9 +296,9 @@ function App() {
 
         {/* Compare Tab */}
         {trajectoryData.length > 0 && activeView === 'compare' && (
-          <PathComparison 
+          <PathComparison
             trajectory={trajectoryData}
-            constraints={constraints} 
+            constraints={constraints}
           />
         )}
       </main>
@@ -380,10 +352,10 @@ function App() {
             {/* Additional Info */}
             <div className="text-center md:text-right">
               <p className="text-gray-400 text-sm">
-                {t('appTitle', language)} {t('version', language)}
+                Auto Path Validator v0.2.0
               </p>
               <p className="text-gray-500 text-xs mt-1">
-                {t('builtForFRCTeams', language)}
+                Built for FRC Teams
               </p>
               <a
                 href="https://github.com/nexify-robotics/autopathvalidator"

@@ -22,8 +22,8 @@ export function ExportButton({ trajectoryData, violations, constraints }) {
 
             {showMenu && (
                 <>
-                    <div 
-                        className="fixed inset-0 z-40" 
+                    <div
+                        className="fixed inset-0 z-40"
                         onClick={() => setShowMenu(false)}
                     />
                     <div className="absolute right-0 mt-2 bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg z-50 min-w-[200px]">

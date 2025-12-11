@@ -7,15 +7,15 @@ export function SummaryDashboard({ trajectoryData, violations, constraints }) {
     }
 
     // Calculate statistics
-    const totalTime = trajectoryData.length > 0 
+    const totalTime = trajectoryData.length > 0
         ? (trajectoryData[trajectoryData.length - 1].time || 0) - (trajectoryData[0].time || 0)
         : 0;
-    
+
     let totalDistance = 0;
     let maxVelocity = 0;
     let maxAccel = 0;
     let avgVelocity = 0;
-    
+
     trajectoryData.forEach((point, i) => {
         if (i > 0) {
             const dx = (point.x || 0) - (trajectoryData[i - 1].x || 0);
@@ -34,7 +34,7 @@ export function SummaryDashboard({ trajectoryData, violations, constraints }) {
     const errorCount = actualViolations.filter(v => v.severity === 'error').length;
     const warningCount = actualViolations.filter(v => v.severity === 'warning').length;
     const hasSuccess = violations.some(v => v.severity === 'success' && actualViolations.length === 0);
-    
+
     let score = 100;
     if (hasSuccess && actualViolations.length === 0) {
         // Perfect path - no violations
@@ -77,6 +77,10 @@ export function SummaryDashboard({ trajectoryData, violations, constraints }) {
         return 'bg-red-900/30 border-red-500';
     };
 
+    const getStatusText = () => {
+        return errorCount === 0 && warningCount === 0 ? "Ready" : "Needs Fix";
+    };
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {/* Performance Score */}
@@ -91,7 +95,7 @@ export function SummaryDashboard({ trajectoryData, violations, constraints }) {
                     </span>
                 </div>
                 <div className="w-full bg-neutral-900 rounded-full h-2 mt-2">
-                    <div 
+                    <div
                         className={`h-2 rounded-full transition-all ${
                             score >= 80 ? 'bg-green-500' : score >= 60 ? 'bg-yellow-500' : 'bg-red-500'
                         }`}
@@ -173,7 +177,7 @@ export function SummaryDashboard({ trajectoryData, violations, constraints }) {
                             <span className="text-gray-500">Status:</span>
                         </div>
                         <span className={errorCount === 0 && warningCount === 0 ? 'text-green-400 font-bold' : 'text-gray-400'}>
-                            {errorCount === 0 && warningCount === 0 ? 'Ready' : 'Needs Fix'}
+                            {getStatusText()}
                         </span>
                     </div>
                 </div>

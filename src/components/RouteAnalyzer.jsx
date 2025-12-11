@@ -12,7 +12,7 @@ const VIOLATION_TYPE_MAP = {
 // Helper function to calculate path length
 function calculatePathLength(points) {
     if (!points || points.length < 2) return 0;
-    
+
     let length = 0;
     for (let i = 1; i < points.length; i++) {
         const dx = points[i].x - points[i-1].x;
@@ -30,7 +30,7 @@ function StatCard({ title, value, icon, status }) {
             <div className="flex items-center mt-1">
                 {icon && <span className="mr-1">{icon}</span>}
                 <span className={`text-lg font-medium ${
-                    status === 'error' ? 'text-red-400' : 
+                    status === 'error' ? 'text-red-400' :
                     status === 'success' ? 'text-green-400' : 'text-white'
                 }`}>
                     {value}
@@ -40,7 +40,7 @@ function StatCard({ title, value, icon, status }) {
     );
 }
 
-export function RouteAnalyzer({ trajectory = [], violations = [] }) {
+export function RouteAnalyzer({ trajectory = [], violations = [], constraints = {} }) {
     // Group violations by type for better organization
     const groupedViolations = useMemo(() => {
         const groups = {};
@@ -55,151 +55,227 @@ export function RouteAnalyzer({ trajectory = [], violations = [] }) {
         return groups;
     }, [violations]);
 
-    // Analyze path for stability issues
-    const stabilityIssues = useMemo(() => {
-        if (!trajectory || trajectory.length < 2) return [];
-        
-        const issues = [];
-        const _ROBOT_WIDTH = 0.8; // meters - adjust based on your robot dimensions
-        const _CENTER_OF_GRAVITY_HEIGHT = 0.3; // meters - adjust based on your robot
-        const _TRACK_WIDTH = 0.7; // meters - distance between left and right wheels
-        const _G = 9.81; // m/s²
-        
-        for (let i = 1; i < trajectory.length - 1; i++) {
+    // Analyze path for optimization opportunities and best practices
+    const pathAnalysis = useMemo(() => {
+        if (!trajectory || trajectory.length < 2) return { issues: [], stats: {}, optimizations: [] };
+
+        const stats = {
+            totalDistance: 0,
+            maxSpeed: 0,
+            maxAcceleration: 0,
+            maxJerk: 0,
+            maxCentripetal: 0,
+            averageSpeed: 0,
+            averageCurvature: 0,
+            straightSections: 0,
+            turnSections: 0,
+            efficiencyScore: 100,
+            speedUtilization: 0,
+            smoothnessScore: 100
+        };
+
+        // Track critical points (only the worst cases)
+        const criticalPoints = {
+            highestLateralForce: null,
+            lowestStabilityFactor: null,
+            highestSpeedInTurn: null
+        };
+
+        // FRC Robot parameters (typical values)
+        const ROBOT_WIDTH = 0.75; // meters - typical FRC robot width
+        const CENTER_OF_GRAVITY_HEIGHT = 0.4; // meters - typical CG height for FRC
+        const TRACK_WIDTH = 0.6; // meters - typical wheel track width
+        const MAX_SAFE_CENTRIPETAL = 2.0; // m/s² - safe lateral acceleration
+        const G = 9.81; // m/s²
+
+        let totalSpeed = 0;
+        let totalCurvature = 0;
+        let straightCount = 0;
+        let turnCount = 0;
+        let totalAccelVariance = 0;
+        let accelCount = 0;
+
+        for (let i = 1; i < trajectory.length; i++) {
             const prev = trajectory[i-1];
             const curr = trajectory[i];
-            const next = trajectory[i+1];
-            
-            // Calculate turning radius (simplified)
-            const dx1 = curr.x - prev.x;
-            const dy1 = curr.y - prev.y;
-            const dx2 = next.x - curr.x;
-            const dy2 = next.y - curr.y;
-            
-            const angle1 = Math.atan2(dy1, dx1);
-            const angle2 = Math.atan2(dy2, dx2);
-            let angleDiff = angle2 - angle1;
-            
-            // Normalize angle difference to [-π, π]
-            while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-            while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-            
-            // Skip if going straight
-            if (Math.abs(angleDiff) < 0.01) continue;
-            
-            // Calculate centripetal acceleration
-            const velocity = curr.velocity || 0.1; // Avoid division by zero
-            const radius = Math.abs(velocity / angleDiff);
-            const centripetalAcc = (velocity * velocity) / Math.max(radius, 0.1);
-            
-            // Calculate stability factor (simplified)
-            const stabilityFactor = (_TRACK_WIDTH * 0.5 * _G) / (_CENTER_OF_GRAVITY_HEIGHT * centripetalAcc);
-            
-            if (stabilityFactor < 1.5) { // Threshold for stability warning
-                issues.push({
-                    x: curr.x,
-                    y: curr.y,
-                    time: curr.time || 0,
-                    severity: stabilityFactor < 1.0 ? 'high' : 'medium',
-                    message: `Stability risk (factor: ${stabilityFactor.toFixed(2)})`,
-                    suggestion: stabilityFactor < 1.0 ? 
-                        'High tip risk! Reduce speed or widen turn radius.' :
-                        'Moderate tip risk. Consider reducing speed in this turn.'
-                });
+
+            // Calculate distance and speed stats
+            const dx = curr.x - prev.x;
+            const dy = curr.y - prev.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            stats.totalDistance += distance;
+
+            const velocity = curr.velocity || 0;
+            const accel = Math.abs(curr.calculatedAccel || 0);
+            const jerk = Math.abs(curr.calculatedJerk || 0);
+
+            if (velocity > stats.maxSpeed) stats.maxSpeed = velocity;
+            if (accel > stats.maxAcceleration) stats.maxAcceleration = accel;
+            if (jerk > stats.maxJerk) stats.maxJerk = jerk;
+
+            totalSpeed += velocity;
+
+            // Track acceleration variance for smoothness
+            if (accel > 0.01) {
+                totalAccelVariance += accel * accel;
+                accelCount++;
+            }
+
+            // Analyze curvature and turning
+            const curvature = Math.abs(curr.curvature || 0);
+            totalCurvature += curvature;
+
+            if (curvature > 0.01) {
+                // Turning section
+                turnCount++;
+                const radius = Math.abs(1 / curvature); // curvature = 1/radius
+                const centripetalAcc = (velocity * velocity) / radius;
+
+                if (centripetalAcc > stats.maxCentripetal) {
+                    stats.maxCentripetal = centripetalAcc;
+                }
+
+                // Track only the most critical issues
+                if (!criticalPoints.highestLateralForce ||
+                    centripetalAcc > criticalPoints.highestLateralForce.value) {
+                    criticalPoints.highestLateralForce = {
+                        value: centripetalAcc,
+                        x: curr.x,
+                        y: curr.y,
+                        time: curr.time || 0
+                    };
+                }
+
+                // Check for tipping risk
+                const tippingFactor = (TRACK_WIDTH * 0.5 * G) / (CENTER_OF_GRAVITY_HEIGHT * centripetalAcc);
+                if (!criticalPoints.lowestStabilityFactor ||
+                    tippingFactor < criticalPoints.lowestStabilityFactor.value) {
+                    criticalPoints.lowestStabilityFactor = {
+                        value: tippingFactor,
+                        x: curr.x,
+                        y: curr.y,
+                        time: curr.time || 0
+                    };
+                }
+
+                // Track highest speed in sharp turns
+                if (curvature > 0.3 && (!criticalPoints.highestSpeedInTurn ||
+                    velocity > criticalPoints.highestSpeedInTurn.value)) {
+                    criticalPoints.highestSpeedInTurn = {
+                        value: velocity,
+                        x: curr.x,
+                        y: curr.y,
+                        time: curr.time || 0,
+                        curvature: curvature
+                    };
+                }
+
+            } else {
+                // Straight section
+                straightCount++;
             }
         }
-        
-        return issues;
-    }, [trajectory]);
 
-    // Find the first critical point (either violation or stability issue)
-    const firstCriticalPoint = useMemo(() => {
-        // Check stability issues first
-        if (stabilityIssues.length > 0) {
-            const criticalStabilityIssue = stabilityIssues.find(issue => issue.severity === 'high');
-            if (criticalStabilityIssue) return criticalStabilityIssue;
-            return stabilityIssues[0];
+        // Calculate averages and final stats
+        stats.averageSpeed = totalSpeed / trajectory.length;
+        stats.averageCurvature = totalCurvature / trajectory.length;
+        stats.straightSections = straightCount;
+        stats.turnSections = turnCount;
+        stats.speedUtilization = (stats.averageSpeed / constraints.maxVelocity) * 100;
+
+        // Calculate smoothness score based on acceleration variance
+        if (accelCount > 0) {
+            const avgAccelVariance = totalAccelVariance / accelCount;
+            const smoothnessFactor = Math.min(avgAccelVariance / (constraints.maxAcceleration * constraints.maxAcceleration), 1);
+            stats.smoothnessScore = Math.max(0, 100 - (smoothnessFactor * 50));
         }
-        
+
+        // Generate optimization recommendations (not issues)
+        const optimizations = [];
+
+        // Speed utilization optimization
+        if (stats.speedUtilization < 70) {
+            const potentialGain = Math.min(85 - stats.speedUtilization, 25);
+            optimizations.push({
+                type: 'speed_optimization',
+                title: 'Increase Speed Utilization',
+                description: `Current: ${stats.speedUtilization.toFixed(1)}% of max speed`,
+                suggestion: `Can potentially increase average speed by ${potentialGain.toFixed(1)}% by optimizing acceleration/deceleration phases`,
+                impact: 'high',
+                icon: <Gauge className="w-4 h-4 text-blue-400" />
+            });
+        }
+
+        // Smoothness optimization
+        if (stats.smoothnessScore < 80) {
+            optimizations.push({
+                type: 'smoothness_optimization',
+                title: 'Improve Motion Smoothness',
+                description: `Smoothness score: ${stats.smoothnessScore.toFixed(1)}/100`,
+                suggestion: 'Consider adjusting acceleration limits or adding more waypoints for smoother transitions',
+                impact: 'medium',
+                icon: <Move3D className="w-4 h-4 text-green-400" />
+            });
+        }
+
+        // Critical safety issues (only show the worst one)
+        if (criticalPoints.highestLateralForce && criticalPoints.highestLateralForce.value > MAX_SAFE_CENTRIPETAL * 1.2) {
+            optimizations.push({
+                type: 'safety_critical',
+                title: 'Reduce Lateral Forces',
+                description: `Max lateral acceleration: ${criticalPoints.highestLateralForce.value.toFixed(2)} m/s²`,
+                suggestion: 'Reduce speed in turns or increase turn radius to prevent traction loss',
+                impact: 'critical',
+                icon: <AlertTriangle className="w-4 h-4 text-red-500" />
+            });
+        }
+
+        // Calculate efficiency score (higher is better)
+        let efficiencyScore = 100;
+
+        // Reward high speed utilization
+        efficiencyScore += Math.min(stats.speedUtilization - 50, 20);
+
+        // Reward smoothness
+        efficiencyScore += (stats.smoothnessScore - 50) * 0.3;
+
+        // Penalize for critical safety issues
+        if (criticalPoints.highestLateralForce && criticalPoints.highestLateralForce.value > MAX_SAFE_CENTRIPETAL * 1.5) {
+            efficiencyScore -= 30;
+        }
+
+        // Penalize for constraint violations
+        const hasVelocityViolations = Object.keys(groupedViolations).includes('Velocity Constraint');
+        const hasAccelViolations = Object.keys(groupedViolations).includes('Acceleration Constraint');
+
+        if (hasVelocityViolations) efficiencyScore -= 15;
+        if (hasAccelViolations) efficiencyScore -= 10;
+
+        stats.efficiencyScore = Math.max(0, Math.min(100, efficiencyScore));
+
+        return { issues: [], stats, optimizations, criticalPoints };
+    }, [trajectory, constraints, groupedViolations]);
+
+    // Find the first critical point (either path issue or constraint violation)
+    const firstCriticalPoint = useMemo(() => {
+        // Check path analysis issues first
+        if (pathAnalysis.issues.length > 0) {
+            const criticalIssue = pathAnalysis.issues.find(issue => issue.severity === 'high');
+            if (criticalIssue) return criticalIssue;
+            return pathAnalysis.issues[0];
+        }
+
         // Fall back to constraint violations
         if (violations && violations.length > 0) {
             return violations.reduce((earliest, current) => {
                 return (!earliest || (current.time < earliest.time)) ? current : earliest;
             });
         }
-        
-        return null;
-    }, [violations, stabilityIssues]);
 
-    // Generate suggestions based on the violations and stability analysis
-    const suggestions = useMemo(() => {
-        const suggestionsList = [];
-        
-        // Add stability issues first (top 3 high severity)
-        stabilityIssues.slice(0, 3).forEach((issue) => {
-            if (issue.severity === 'high') {
-                suggestionsList.push({
-                    icon: <AlertTriangle className="w-4 h-4 text-red-500" />,
-                    text: issue.suggestion,
-                    severity: "high",
-                    location: `Near (${issue.x?.toFixed(1) || '?'}, ${issue.y?.toFixed(1) || '?'})`
-                });
-            }
-        });
-        
-        // Add constraint violations if we don't have too many suggestions yet
-        if (suggestionsList.length < 3) {
-            if (groupedViolations['Velocity Constraint']) {
-                suggestionsList.push({
-                    icon: <Gauge className="w-4 h-4 text-yellow-500" />,
-                    text: "Velocity exceeds maximum limit. Consider reducing speed in turns.",
-                    severity: "high"
-                });
-            }
-            
-            if (groupedViolations['Acceleration Constraint']) {
-                suggestionsList.push({
-                    icon: <Move3D className="w-4 h-4 text-yellow-500" />,
-                    text: "High acceleration detected. Smooth out speed changes to prevent wheel slip.",
-                    severity: "high"
-                });
-            }
-            
-            if (groupedViolations['Jerk Constraint']) {
-                suggestionsList.push({
-                    icon: <RotateCcw className="w-4 h-4 text-yellow-500" />,
-                    text: "High jerk detected. This can cause mechanical stress and instability.",
-                    severity: "medium"
-                });
-            }
-            
-            if (groupedViolations['Centripetal Force Constraint']) {
-                suggestionsList.push({
-                    icon: <AlertTriangle className="w-4 h-4 text-yellow-500" />,
-                    text: "High lateral forces in turns. Consider a wider turning radius.",
-                    severity: "high"
-                });
-            }
-        }
-        
-        // Add general optimization suggestions if no critical issues
-        if (suggestionsList.length === 0 && trajectory && trajectory.length > 0) {
-            suggestionsList.push(
-                {
-                    icon: <Lightbulb className="w-4 h-4 text-blue-400" />,
-                    text: "Route looks stable! Consider optimizing for time by increasing speed in straight sections.",
-                    severity: "low"
-                },
-                {
-                    icon: <ArrowDownToLine className="w-4 h-4 text-blue-400" />,
-                    text: "For better stability, ensure weight is distributed low in the robot's chassis.",
-                    severity: "info"
-                }
-            );
-        }
-        
-        return suggestionsList;
-    }, [groupedViolations, trajectory, stabilityIssues]);
+        return null;
+    }, [violations, pathAnalysis.issues]);
+
+
 
     if (!trajectory || trajectory.length === 0) {
         return (
@@ -245,55 +321,89 @@ export function RouteAnalyzer({ trajectory = [], violations = [] }) {
                 )}
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                    <StatCard 
-                        title="Total Waypoints" 
-                        value={trajectory.length} 
+                    <StatCard
+                        title="Total Waypoints"
+                        value={trajectory.length}
                         icon={<span className="text-blue-400">#</span>}
                     />
-                    <StatCard 
-                        title="Max Velocity" 
+                    <StatCard
+                        title="Max Velocity"
                         value={`${Math.max(...trajectory.map(p => Math.abs(p.velocity || 0))).toFixed(2)} m/s`}
                         status={groupedViolations['Velocity Constraint'] ? 'error' : 'success'}
                     />
-                    <StatCard 
-                        title="Max Acceleration" 
+                    <StatCard
+                        title="Max Acceleration"
                         value={`${Math.max(...trajectory.map(p => Math.abs(p.calculatedAccel || 0))).toFixed(2)} m/s²`}
                         status={groupedViolations['Acceleration Constraint'] ? 'error' : 'success'}
                     />
-                    <StatCard 
-                        title="Path Length" 
+                    <StatCard
+                        title="Path Length"
                         value={`${calculatePathLength(trajectory).toFixed(2)} m`}
                         icon={<span className="text-green-400">↝</span>}
                     />
                 </div>
+
+                {/* Additional Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-neutral-600">
+                    <StatCard
+                        title="Efficiency Score"
+                        value={`${pathAnalysis.stats.efficiencyScore}/100`}
+                        status={pathAnalysis.stats.efficiencyScore > 80 ? 'success' : pathAnalysis.stats.efficiencyScore > 60 ? 'warning' : 'error'}
+                    />
+                    <StatCard
+                        title="Max Lateral Force"
+                        value={`${pathAnalysis.stats.maxCentripetal.toFixed(2)} m/s²`}
+                        status={pathAnalysis.stats.maxCentripetal > 3.0 ? 'error' : pathAnalysis.stats.maxCentripetal > 2.0 ? 'warning' : 'success'}
+                    />
+                    <StatCard
+                        title="Straight/Turn Ratio"
+                        value={`${pathAnalysis.stats.straightSections}/${pathAnalysis.stats.turnSections}`}
+                        icon={<span className="text-purple-400">∿</span>}
+                    />
+                    <StatCard
+                        title="Average Speed"
+                        value={`${pathAnalysis.stats.averageSpeed.toFixed(2)} m/s`}
+                        status={pathAnalysis.stats.averageSpeed > constraints.maxVelocity * 0.8 ? 'success' : 'warning'}
+                    />
+                </div>
             </div>
             
-            {/* Suggestions */}
-            {suggestions.length > 0 && (
+            {/* Optimization Recommendations */}
+            {pathAnalysis.optimizations.length > 0 && (
                 <div className="bg-neutral-800 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold text-white mb-3">Suggestions</h3>
-                    <div className="space-y-2">
-                        {suggestions.map((suggestion, index) => {
+                    <h3 className="text-lg font-semibold text-white mb-3">Optimization Opportunities</h3>
+                    <div className="space-y-3">
+                        {pathAnalysis.optimizations.map((opt, index) => {
                             const bgColor = {
-                                'high': 'bg-red-900/20 hover:bg-red-900/30',
-                                'medium': 'bg-yellow-900/20 hover:bg-yellow-900/30',
-                                'low': 'bg-blue-900/20 hover:bg-blue-900/30',
-                                'info': 'bg-gray-800/50 hover:bg-gray-700/50'
-                            }[suggestion.severity] || 'bg-neutral-800/50';
-                            
+                                'critical': 'bg-red-900/20 border-red-500',
+                                'high': 'bg-blue-900/20 border-blue-500',
+                                'medium': 'bg-green-900/20 border-green-500',
+                                'low': 'bg-gray-800/50 border-gray-500'
+                            }[opt.impact] || 'bg-neutral-800/50 border-neutral-500';
+
+                            const impactColor = {
+                                'critical': 'text-red-400',
+                                'high': 'text-blue-400',
+                                'medium': 'text-green-400',
+                                'low': 'text-gray-400'
+                            }[opt.impact] || 'text-gray-400';
+
                             return (
-                                <div 
-                                    key={index} 
-                                    className={`flex items-start p-3 rounded transition-colors ${bgColor}`}
-                                >
-                                    <div className="mr-3 mt-0.5">
-                                        {suggestion.icon}
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-gray-200">{suggestion.text}</p>
-                                        {suggestion.location && (
-                                            <p className="text-xs text-gray-400 mt-1">Location: {suggestion.location}</p>
-                                        )}
+                                <div key={index} className={`p-4 rounded border-l-4 ${bgColor}`}>
+                                    <div className="flex items-start">
+                                        <div className="mr-3 mt-0.5">
+                                            {opt.icon}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h4 className="font-medium text-gray-200">{opt.title}</h4>
+                                                <span className={`text-xs px-2 py-1 rounded ${impactColor} bg-current bg-opacity-20`}>
+                                                    {opt.impact.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-300 mb-2">{opt.description}</p>
+                                            <p className="text-sm text-gray-400 italic">{opt.suggestion}</p>
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -302,10 +412,45 @@ export function RouteAnalyzer({ trajectory = [], violations = [] }) {
                 </div>
             )}
             
-            {/* Violation Details */}
+            {/* Path Analysis Issues */}
+            {pathAnalysis.issues.length > 0 && (
+                <div className="bg-neutral-800 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold text-white mb-3">Path Analysis Issues</h3>
+                    <div className="space-y-3">
+                        {pathAnalysis.issues.map((issue, index) => (
+                            <div key={index} className={`p-3 rounded border-l-4 ${
+                                issue.severity === 'high' ? 'bg-red-900/20 border-red-500' :
+                                issue.severity === 'medium' ? 'bg-yellow-900/20 border-yellow-500' :
+                                'bg-blue-900/20 border-blue-500'
+                            }`}>
+                                <div className="flex items-start">
+                                    <AlertTriangle className={`w-4 h-4 mt-0.5 mr-2 flex-shrink-0 ${
+                                        issue.severity === 'high' ? 'text-red-400' :
+                                        issue.severity === 'medium' ? 'text-yellow-400' :
+                                        'text-blue-400'
+                                    }`} />
+                                    <div>
+                                        <p className="font-medium text-gray-200">{issue.message}</p>
+                                        <p className="text-sm text-gray-400">
+                                            Location: ({issue.x?.toFixed(1)}, {issue.y?.toFixed(1)}) at t={issue.time?.toFixed(2)}s
+                                        </p>
+                                        {issue.suggestion && (
+                                            <p className="text-sm text-gray-300 mt-1 italic">
+                                                Suggestion: {issue.suggestion}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Constraint Violation Details */}
             {Object.keys(groupedViolations).length > 0 && (
                 <div className="bg-neutral-800 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold text-white mb-3">Issues Detected</h3>
+                    <h3 className="text-lg font-semibold text-white mb-3">Constraint Violations</h3>
                     <div className="space-y-3">
                         {Object.entries(groupedViolations).map(([type, typeViolations]) => {
                             const first = typeViolations[0] || {};
@@ -321,7 +466,7 @@ export function RouteAnalyzer({ trajectory = [], violations = [] }) {
                                 <div key={type} className="bg-neutral-700/30 p-3 rounded">
                                     <h4 className="font-medium text-red-400">{type}</h4>
                                     <p className="text-sm text-gray-300">
-                                        {typeViolations.length} occurrence{typeViolations.length > 1 ? 's' : ''} ·
+                                        {typeViolations.length} {typeViolations.length > 1 ? 'occurrences' : 'occurrence'} ·
                                         {' '}First at t={firstTime}s ·
                                         {' '}Max value: {maxValue}
                                     </p>
@@ -334,4 +479,3 @@ export function RouteAnalyzer({ trajectory = [], violations = [] }) {
         </div>
     );
 }
-

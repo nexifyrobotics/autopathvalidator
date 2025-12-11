@@ -6,7 +6,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-neutral-900 border border-gray-700 p-2 rounded shadow-lg opacity-90">
-                <p className="text-gray-200 text-sm">{`Time: ${Number(label).toFixed(2)}s`}</p>
+                <p className="text-gray-200 text-sm">Time: ${Number(label).toFixed(2)}s</p>
                 {payload.map((entry, index) => (
                     <p key={index} style={{ color: entry.color }} className="text-sm">
                         {`${entry.name}: ${Number(entry.value).toFixed(2)}`}
@@ -72,7 +72,7 @@ export function EnhancedCharts({ data, constraints, violations }) {
                                 <XAxis dataKey="time" stroke="#888" />
                                 <YAxis
                                     stroke="#888"
-                                    label={{ value: 'Vel (m/s)', angle: -90, position: 'insideLeft' }}
+                                    label={{ value: `Vel (m/s)`, angle: -90, position: 'insideLeft' }}
                                     domain={[0, Math.max(5, constraints.maxVelocity + 0.5)]}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
@@ -109,7 +109,7 @@ export function EnhancedCharts({ data, constraints, violations }) {
                                 <XAxis dataKey="time" stroke="#888" />
                                 <YAxis
                                     stroke="#888"
-                                    label={{ value: 'Acc (m/s²)', angle: -90, position: 'insideLeft' }}
+                                    label={{ value: `m/s²`, angle: -90, position: 'insideLeft' }}
                                     domain={[-Math.max(4, constraints.maxAcceleration + 1), Math.max(4, constraints.maxAcceleration + 1)]}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
@@ -132,7 +132,7 @@ export function EnhancedCharts({ data, constraints, violations }) {
                                 <XAxis dataKey="time" stroke="#888" />
                                 <YAxis
                                     stroke="#888"
-                                    label={{ value: 'Jerk (m/s³)', angle: -90, position: 'insideLeft' }}
+                                    label={{ value: `m/s³`, angle: -90, position: 'insideLeft' }}
                                     domain={[-Math.max(20, constraints.maxJerk + 5), Math.max(20, constraints.maxJerk + 5)]}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
