@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Minus, Save, Trash2, Edit3, MapPin, Target, AlertTriangle } from 'lucide-react';
 import PathTemplates from './PathTemplates';
 
-const PathEditor = ({ onPathCreated, constraints, selectedField }) => {
+const PathEditor = ({ onPathCreated, constraints }) => {
   const [waypoints, setWaypoints] = useState([]);
 
   // Add a new waypoint
@@ -83,7 +83,7 @@ const PathEditor = ({ onPathCreated, constraints, selectedField }) => {
           setWaypoints(templateWaypoints.map((wp, index) => ({ ...wp, id: Date.now() + index })));
         }}
         onSaveTemplate={(template) => {
-          console.log('Save template:', template);
+          // Template saving functionality could be added here
         }}
       />
 

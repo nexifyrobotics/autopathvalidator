@@ -78,17 +78,9 @@ function App() {
   const handleFileUpload = (json, name) => {
     setIsLoading(true);
     try {
-      console.log('📁 File uploaded:', name);
-      console.log('📊 Raw JSON:', json);
-
       const rawTrajectory = parseTrajectory(json);
-      console.log('✅ Parsed trajectory:', rawTrajectory);
-
       const enrichedTrajectory = calculateKinematics(rawTrajectory);
-      console.log('✅ Enriched trajectory:', enrichedTrajectory);
-
       const v = validateTrajectory(enrichedTrajectory, constraints);
-      console.log('✅ Violations:', v);
 
       setTrajectoryData(enrichedTrajectory);
       setFileName(name);
@@ -139,7 +131,7 @@ function App() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
               Auto Path Validator
             </h1>
-            <span className="text-sm text-gray-500 font-mono">v0.2.0</span>
+            <span className="text-sm text-gray-500 font-mono">v1.0.0</span>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -421,7 +413,7 @@ function App() {
             {/* Additional Info */}
             <div className="text-center md:text-right">
               <p className="text-gray-400 text-sm">
-                Auto Path Validator v0.2.0
+                Auto Path Validator v1.0.0
               </p>
               <p className="text-gray-500 text-xs mt-1">
                 Built for FRC Teams

@@ -2,8 +2,257 @@ import React, { useState } from 'react';
 import { BookOpen, Download, Upload, Star, Plus } from 'lucide-react';
 
 const PathTemplates = ({ onLoadTemplate, onSaveTemplate }) => {
-  console.log('PathTemplates rendered', { onLoadTemplate, onSaveTemplate });
   const [templates, setTemplates] = useState([
+    // FRC 2025 Reefscape Özel Şablonlar
+    {
+      id: 'reef-approach-l4',
+      name: 'Reef L4 Approach',
+      description: 'Optimal approach path to Reef Level 4 for coral scoring',
+      difficulty: 'Medium',
+      tags: ['reefscape', 'coral', 'l4', 'scoring'],
+      waypoints: [
+        { x: 1.5, y: 4 },
+        { x: 3.2, y: 4.2 },
+        { x: 4.8, y: 4.5 },
+        { x: 6.2, y: 4.8 },
+        { x: 7.5, y: 5.2 }
+      ],
+      starred: true
+    },
+    {
+      id: 'processor-shot',
+      name: 'Processor Algae Shot',
+      description: 'Efficient path to Processor for algae scoring',
+      difficulty: 'Easy',
+      tags: ['reefscape', 'algae', 'processor', 'scoring'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 3.5, y: 3.8 },
+        { x: 5, y: 3.2 },
+        { x: 6.5, y: 2.8 },
+        { x: 8, y: 2.5 }
+      ],
+      starred: true
+    },
+    {
+      id: 'barge-climb',
+      name: 'Barge Climb Path',
+      description: 'Strategic path for climbing the Chain/Barge',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'climb', 'barge', 'endgame'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 4, y: 3.5 },
+        { x: 6, y: 3 },
+        { x: 8, y: 2.5 },
+        { x: 10, y: 2 },
+        { x: 12, y: 1.5 },
+        { x: 14, y: 1 }
+      ],
+      starred: true
+    },
+    {
+      id: 'algae-collection',
+      name: 'Ground Algae Collection',
+      description: 'Path optimized for collecting ground algae',
+      difficulty: 'Medium',
+      tags: ['reefscape', 'algae', 'collection', 'ground'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 3.5, y: 3.2 },
+        { x: 5, y: 2.5 },
+        { x: 6.5, y: 2 },
+        { x: 8, y: 2.5 },
+        { x: 9.5, y: 3 },
+        { x: 11, y: 3.5 }
+      ],
+      starred: false
+    },
+    {
+      id: 'reef-defense',
+      name: 'Reef Defense Route',
+      description: 'Defensive positioning around the Reef',
+      difficulty: 'Medium',
+      tags: ['reefscape', 'defense', 'positioning'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 4, y: 4.5 },
+        { x: 6, y: 4.8 },
+        { x: 8, y: 4.5 },
+        { x: 10, y: 4 }
+      ],
+      starred: false
+    },
+    {
+      id: 'mobility-bonus',
+      name: 'Mobility Bonus Path',
+      description: 'Path designed to maximize mobility bonus points',
+      difficulty: 'Easy',
+      tags: ['reefscape', 'mobility', 'bonus', 'auto'],
+      waypoints: [
+        { x: 1.5, y: 4 },
+        { x: 4, y: 3.8 },
+        { x: 6.5, y: 3.5 },
+        { x: 9, y: 3.2 },
+        { x: 11.5, y: 3 }
+      ],
+      starred: true
+    },
+    {
+      id: 'coop-play',
+      name: 'Cooperative Play Route',
+      description: 'Path supporting cooperative gameplay with alliance partners',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'cooperative', 'alliance', 'strategy'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 3.5, y: 4.2 },
+        { x: 5, y: 4.5 },
+        { x: 6.5, y: 4.8 },
+        { x: 8, y: 4.5 },
+        { x: 9.5, y: 4 },
+        { x: 11, y: 3.5 }
+      ],
+      starred: false
+    },
+    {
+      id: 'reef-l2-l3',
+      name: 'Reef L2-L3 Hybrid',
+      description: 'Balanced path for scoring on multiple Reef levels',
+      difficulty: 'Medium',
+      tags: ['reefscape', 'hybrid', 'l2', 'l3', 'versatile'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 4, y: 4.3 },
+        { x: 6, y: 4.6 },
+        { x: 8, y: 4.3 },
+        { x: 10, y: 4 }
+      ],
+      starred: false
+    },
+    {
+      id: 'endgame-transition',
+      name: 'Auto to Endgame Transition',
+      description: 'Smooth transition from autonomous to endgame phase',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'transition', 'endgame', 'timing'],
+      waypoints: [
+        { x: 1.5, y: 4 },
+        { x: 3, y: 4.2 },
+        { x: 4.5, y: 4.5 },
+        { x: 6, y: 4.8 },
+        { x: 7.5, y: 4.5 },
+        { x: 9, y: 4 },
+        { x: 10.5, y: 3.5 },
+        { x: 12, y: 3 }
+      ],
+      starred: true
+    },
+    {
+      id: 'net-shot',
+      name: 'Net Algae Shot',
+      description: 'Precise path for scoring algae in the Net',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'algae', 'net', 'precision'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 4, y: 4.5 },
+        { x: 6, y: 5 },
+        { x: 8, y: 5.2 },
+        { x: 10, y: 5.5 },
+        { x: 12, y: 5.8 }
+      ],
+      starred: false
+    },
+
+    // Gelişmiş FRC Stratejileri
+    {
+      id: 'triple-threat',
+      name: 'Triple Threat Auto',
+      description: 'Path for scoring coral, algae, and mobility in one auto period',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'triple', 'auto', 'scoring', 'algae', 'coral'],
+      waypoints: [
+        { x: 1.5, y: 4 },
+        { x: 3, y: 4.2 },
+        { x: 4.5, y: 4.5 },
+        { x: 6, y: 4.8 },
+        { x: 7.5, y: 4.2 },
+        { x: 9, y: 3.8 },
+        { x: 10.5, y: 3.5 },
+        { x: 12, y: 3 }
+      ],
+      starred: true
+    },
+    {
+      id: 'defense-evade',
+      name: 'Defense Evasion',
+      description: 'Path designed to avoid defensive robots while scoring',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'defense', 'evasion', 'strategy'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 3.5, y: 3.2 },
+        { x: 5, y: 2.5 },
+        { x: 6.5, y: 2 },
+        { x: 8, y: 2.5 },
+        { x: 9.5, y: 3.5 },
+        { x: 11, y: 4.2 },
+        { x: 12.5, y: 4.8 }
+      ],
+      starred: true
+    },
+    {
+      id: 'algae-processor-net',
+      name: 'Algae Processor + Net Combo',
+      description: 'Collect algae and score in both Processor and Net',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'algae', 'combo', 'processor', 'net'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 4, y: 3.5 },
+        { x: 6, y: 3 },
+        { x: 8, y: 2.5 },
+        { x: 10, y: 2 },
+        { x: 12, y: 2.5 },
+        { x: 14, y: 3 },
+        { x: 16, y: 3.5 }
+      ],
+      starred: false
+    },
+    {
+      id: 'rapid-fire-coral',
+      name: 'Rapid Fire Coral',
+      description: 'High-speed coral scoring with minimal positioning time',
+      difficulty: 'Hard',
+      tags: ['reefscape', 'coral', 'speed', 'rapid', 'scoring'],
+      waypoints: [
+        { x: 1.5, y: 4 },
+        { x: 3.5, y: 4.3 },
+        { x: 5.5, y: 4.6 },
+        { x: 7.5, y: 4.3 },
+        { x: 9.5, y: 4 }
+      ],
+      starred: false
+    },
+    {
+      id: 'endgame-setup',
+      name: 'Endgame Positioning',
+      description: 'Strategic positioning for optimal endgame climb',
+      difficulty: 'Medium',
+      tags: ['reefscape', 'endgame', 'positioning', 'climb'],
+      waypoints: [
+        { x: 2, y: 4 },
+        { x: 4.5, y: 3.8 },
+        { x: 7, y: 3.5 },
+        { x: 9.5, y: 3 },
+        { x: 12, y: 2.5 },
+        { x: 14.5, y: 2 }
+      ],
+      starred: true
+    },
+
+    // Genel FRC Stratejileri
     {
       id: 's-curve-basic',
       name: 'S-Curve Basic',
@@ -32,7 +281,7 @@ const PathTemplates = ({ onLoadTemplate, onSaveTemplate }) => {
         { x: 5, y: 5 },
         { x: 5, y: 7 }
       ],
-      starred: true
+      starred: false
     },
     {
       id: 'figure-eight',
@@ -68,7 +317,7 @@ const PathTemplates = ({ onLoadTemplate, onSaveTemplate }) => {
         { x: 11, y: 3 },
         { x: 13, y: 4 }
       ],
-      starred: true
+      starred: false
     },
     {
       id: 'spiral-path',
