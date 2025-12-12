@@ -159,14 +159,11 @@ const PathTemplates = ({ onLoadTemplate, onSaveTemplate }) => {
   };
 
   return (
-    <div style={{ backgroundColor: 'yellow', color: 'black', padding: '10px', margin: '10px' }}>
-      <h2>PathTemplates Test Component</h2>
-      <p>This should be visible if PathTemplates renders</p>
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-purple-400" />
-          <h3 className="text-lg font-semibold text-white">Path Templates</h3>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <BookOpen className="w-5 h-5 text-purple-400" />
+        <h3 className="text-lg font-semibold text-white">Path Templates</h3>
+      </div>
 
       {/* Search and Filters */}
       <div className="flex flex-wrap gap-3">
@@ -291,7 +288,6 @@ const PathTemplates = ({ onLoadTemplate, onSaveTemplate }) => {
 
       <div className="text-xs text-gray-500 text-center">
         {filteredTemplates.length} of {templates.length} templates shown
-      </div>
       </div>
     </div>
   );
