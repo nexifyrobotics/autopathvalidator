@@ -15,13 +15,14 @@ import { RouteAnalyzer } from './components/RouteAnalyzer'
 import PathEditor from './components/PathEditor'
 import PathOptimizer from './components/PathOptimizer'
 import FieldSelector from './components/FieldSelector'
+import RealTimeVisualization from './components/RealTimeVisualization'
 import { parseTrajectory } from './utils/parser'
 import { calculateKinematics } from './utils/kinematics'
 import { validateTrajectory } from './utils/validator'
 import { setupKeyboardShortcuts } from './utils/keyboardShortcuts'
 import { saveToHistory } from './utils/history'
 import { parseShareURL } from './utils/shareUtils'
-import { Activity, Loader2, History, Share2, Github, Sparkles, Route, PenTool } from 'lucide-react'
+import { Activity, Loader2, History, Share2, Github, Sparkles, Route, PenTool, Play, Pause, Square } from 'lucide-react'
 
 function App() {
   const [trajectoryData, setTrajectoryData] = useState([]);
@@ -32,7 +33,7 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showOptimization, setShowOptimization] = useState(false);
-  const [activeView, setActiveView] = useState('analysis'); // 'analysis', 'route', 'compare', or 'editor'
+  const [activeView, setActiveView] = useState('analysis'); // 'analysis', 'route', 'compare', 'editor', or 'realtime'
   const [selectedField, setSelectedField] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -78,15 +79,39 @@ function App() {
   const handleFileUpload = (json, name) => {
     setIsLoading(true);
     try {
+      console.log('Starting file upload processing for:', name);
+      
+      // Validate input
+      if (!json) {
+        throw new Error('No data found in the file');
+      }
+      
+      // Parse the trajectory data
+      console.log('Parsing trajectory data...');
       const rawTrajectory = parseTrajectory(json);
+      
+      if (!rawTrajectory || !rawTrajectory.length) {
+        throw new Error('No valid trajectory points found in the file');
+      }
+      
+      console.log(`Successfully parsed ${rawTrajectory.length} trajectory points`);
+      
+      // Calculate kinematics
+      console.log('Calculating kinematics...');
       const enrichedTrajectory = calculateKinematics(rawTrajectory);
+      
+      // Validate against constraints
+      console.log('Validating trajectory...');
       const v = validateTrajectory(enrichedTrajectory, constraints);
-
+      
+      // Update state
+      console.log('Updating application state...');
       setTrajectoryData(enrichedTrajectory);
       setFileName(name);
       setViolations(v);
 
       // Save to history
+      console.log('Saving to history...');
       saveToHistory({
         fileName: name,
         trajectoryData: enrichedTrajectory,
@@ -94,11 +119,34 @@ function App() {
         constraints: constraints
       });
 
-      showToast('Loaded: ' + name, 'success');
+      console.log('File upload completed successfully');
+      showToast(`Successfully loaded ${name} (${enrichedTrajectory.length} points)`, 'success');
     } catch (err) {
       console.error('❌ Error during file upload:', err);
-      console.error('Stack:', err.stack);
-      showToast('Error: ' + err.message, 'error');
+      console.error('Error stack:', err.stack);
+      console.error('Error details:', {
+        name: err.name,
+        message: err.message,
+        file: name,
+        dataType: typeof json,
+        isArray: Array.isArray(json),
+        jsonKeys: json ? Object.keys(json) : 'no data'
+      });
+      
+      // Reset state to prevent black screen
+      setTrajectoryData([]);
+      setFileName("");
+      setViolations([]);
+      
+      // Show user-friendly error message
+      let errorMessage = err.message || 'Failed to load trajectory file';
+      if (errorMessage.includes('JSON')) {
+        errorMessage = 'Invalid file format. Please upload a valid JSON trajectory file.';
+      } else if (errorMessage.includes('waypoints')) {
+        errorMessage = 'This appears to be a waypoint file. Please upload a generated trajectory file instead.';
+      }
+      
+      showToast(`Error: ${errorMessage}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -197,52 +245,43 @@ function App() {
 
         {/* Tabs */}
         {trajectoryData.length > 0 && (
-          <div className="flex gap-2 border-b border-neutral-700">
+          <div className="flex space-x-2 mb-4 overflow-x-auto pb-2">
             <button
               onClick={() => setActiveView('analysis')}
-              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
-                activeView === 'analysis'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'analysis' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
             >
-              <Activity className="w-4 h-4" />
+              <Activity size={16} />
               <span>Analysis</span>
             </button>
-
             <button
               onClick={() => setActiveView('route')}
-              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
-                activeView === 'route'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'route' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
             >
-              <Route className="w-4 h-4" />
-              <span>Route Analysis</span>
+              <Route size={16} />
+              <span>Route Analyzer</span>
             </button>
-
             <button
               onClick={() => setActiveView('compare')}
-              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
-                activeView === 'compare'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'compare' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
             >
-              <span>Compare Paths</span>
+              <Square size={16} />
+              <span>Compare</span>
             </button>
-
             <button
               onClick={() => setActiveView('editor')}
-              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
-                activeView === 'editor'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-gray-400 hover:text-white'
-              }`}
+              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'editor' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
             >
-              <PenTool className="w-4 h-4" />
+              <PenTool size={16} />
               <span>Path Editor</span>
+            </button>
+            <button
+              onClick={() => setActiveView('realtime')}
+              disabled={!trajectoryData.length}
+              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${!trajectoryData.length ? 'opacity-50 cursor-not-allowed' : ''} ${activeView === 'realtime' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
+              title={!trajectoryData.length ? 'Please load a trajectory first' : ''}
+            >
+              {activeView === 'realtime' ? <Pause size={16} /> : <Play size={16} />}
+              <span>Realtime View</span>
             </button>
           </div>
         )}
@@ -309,6 +348,24 @@ function App() {
             trajectory={trajectoryData}
             constraints={constraints}
           />
+        )}
+
+        {/* Realtime View Tab */}
+        {trajectoryData.length > 0 && activeView === 'realtime' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <RealTimeVisualization trajectoryData={trajectoryData} />
+              </div>
+              <div className="space-y-4">
+                <AnalysisPanel 
+                  violations={violations} 
+                  trajectoryData={trajectoryData}
+                  fileName={fileName}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Editor Tab */}

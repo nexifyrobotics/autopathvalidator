@@ -5,6 +5,8 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![FRC](https://img.shields.io/badge/FRC-2025-red)
+![React](https://img.shields.io/badge/React-19.2.0-blue)
+![Vite](https://img.shields.io/badge/Vite-7.2.4-yellow)
 
 ## 🚀 Features
 
@@ -40,6 +42,16 @@
 - ✅ **Dark Theme**: Eye-friendly interface for long design sessions
 - ✅ **Real-time Updates**: Instant feedback on constraint changes
 - ✅ **Export Capabilities**: Save paths in multiple formats
+
+### 🎬 **RealTime Path Visualization**
+- ✅ **Interactive Field View**: Real-time robot animation on FRC field
+- ✅ **Manual Frame Control**: Step through trajectory frames precisely
+- ✅ **Velocity & Acceleration Charts**: Live kinematic profile visualization
+- ✅ **Constraint Violation Tracking**: Real-time violation detection and highlighting
+- ✅ **Data Table View**: Complete trajectory data in tabular format
+- ✅ **Export Current Frame**: Save visualization frames as images
+- ✅ **Keyboard Shortcuts**: Full keyboard control for navigation
+- ✅ **Performance Metrics**: Frame rate and data statistics
 
 ## 🎮 **Path Editor Guide**
 
@@ -157,6 +169,103 @@ MIT License - feel free to use in your FRC team!
 ## 🤝 Contributing
 
 Contributions welcome! Please open an issue or PR.
+
+## 🎬 **RealTime Path Visualization Guide**
+
+### Loading and Analyzing Trajectories
+1. **Upload Trajectory**: Click "Choose File" and select your JSON trajectory file
+2. **Navigate to RealTime View**: Click the "Realtime View" tab
+3. **Manual Frame Control**:
+   - Use **Frame input** to jump to specific frame numbers
+   - Use **Time input** to jump to specific time points
+   - Use **step buttons** (← →) for frame-by-frame navigation
+   - Use **quick navigation** (⟪ ⟪10 10⟫ ⟫) for fast movement
+
+### Advanced Features
+- **Velocity Charts**: Real-time velocity profile with constraint violations
+- **Acceleration Charts**: Live acceleration data with visual indicators
+- **Data Table**: Complete trajectory data with clickable rows
+- **Export Frame**: Save current visualization as PNG image
+- **Keyboard Shortcuts**: Space (play/pause), ←→ (step), R (reset), L (loop)
+
+### Keyboard Shortcuts
+- **Space**: Play/Pause (removed in current version)
+- **← →**: Step backward/forward
+- **R**: Reset to start
+- **L**: Toggle loop mode
+
+## 🚀 **Local Development Setup**
+
+### Prerequisites
+- **Node.js** 18+ (Download from [nodejs.org](https://nodejs.org/))
+- **npm** or **yarn** package manager
+
+### Installation & Running
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/dorukdogular/autopathvalidator.git
+   cd autopathvalidator
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Start development server**:
+   ```bash
+   npm run dev
+   # or
+   npx vite
+   ```
+
+4. **Open in browser**:
+   - Navigate to `http://localhost:5173`
+   - The app will automatically reload on code changes
+
+### Build for Production
+
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Deploy to GitHub Pages
+npm run deploy
+```
+
+### Project Structure
+```
+autopathvalidator/
+├── src/
+│   ├── components/          # React components
+│   │   ├── RealTimeVisualization.jsx  # Trajectory visualization
+│   │   ├── PathEditor.jsx             # Path creation tool
+│   │   └── ...
+│   ├── utils/               # Utility functions
+│   │   ├── parser.js        # Trajectory parsing
+│   │   ├── kinematics.js    # Motion calculations
+│   │   └── validator.js     # Constraint validation
+│   └── App.jsx              # Main application
+├── public/                  # Static assets
+├── sample.json              # Sample trajectory data
+└── package.json
+```
+
+## 🐛 **Troubleshooting**
+
+### Common Issues
+- **RealTime View not showing**: Make sure to upload a trajectory file first
+- **Charts not displaying**: Check that your trajectory has valid kinematic data
+- **Performance issues**: Large trajectory files may cause slowdowns
+
+### Debug Mode
+- Open browser developer tools (F12)
+- Check console for error messages
+- RealTime View has debug logging enabled
 
 ## 📧 Support
 
