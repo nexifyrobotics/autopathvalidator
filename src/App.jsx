@@ -12,13 +12,16 @@ import { HistoryPanel } from './components/HistoryPanel'
 import { ShareDialog } from './components/ShareDialog'
 import { OptimizationPanel } from './components/OptimizationPanel'
 import { RouteAnalyzer } from './components/RouteAnalyzer'
+import PathEditor from './components/PathEditor'
+import PathOptimizer from './components/PathOptimizer'
+import FieldSelector from './components/FieldSelector'
 import { parseTrajectory } from './utils/parser'
 import { calculateKinematics } from './utils/kinematics'
 import { validateTrajectory } from './utils/validator'
 import { setupKeyboardShortcuts } from './utils/keyboardShortcuts'
 import { saveToHistory } from './utils/history'
 import { parseShareURL } from './utils/shareUtils'
-import { Activity, Loader2, History, Share2, Github, Sparkles, Route } from 'lucide-react'
+import { Activity, Loader2, History, Share2, Github, Sparkles, Route, PenTool } from 'lucide-react'
 
 function App() {
   const [trajectoryData, setTrajectoryData] = useState([]);
@@ -29,7 +32,8 @@ function App() {
   const [showHistory, setShowHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showOptimization, setShowOptimization] = useState(false);
-  const [activeView, setActiveView] = useState('analysis'); // 'analysis', 'route', or 'compare'
+  const [activeView, setActiveView] = useState('analysis'); // 'analysis', 'route', 'compare', or 'editor'
+  const [selectedField, setSelectedField] = useState(null);
   const fileInputRef = useRef(null);
 
   const [constraints, setConstraints] = useState({
@@ -50,7 +54,7 @@ function App() {
         setShowOptimization(false);
       },
       onSwitchTab: (index) => {
-        const views = ['analysis', 'route', 'compare'];
+        const views = ['analysis', 'route', 'compare', 'editor'];
         setActiveView(views[Math.min(index, views.length - 1)]);
       }
     });
@@ -236,6 +240,18 @@ function App() {
             >
               <span>Compare Paths</span>
             </button>
+
+            <button
+              onClick={() => setActiveView('editor')}
+              className={`px-6 py-3 font-medium text-sm flex items-center space-x-2 ${
+                activeView === 'editor'
+                  ? 'text-blue-400 border-b-2 border-blue-400'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              <PenTool className="w-4 h-4" />
+              <span>Path Editor</span>
+            </button>
           </div>
         )}
 
@@ -259,7 +275,7 @@ function App() {
 
         {/* Analysis Tab */}
         {trajectoryData.length > 0 && activeView === 'analysis' && (
-          <>
+          <div className="space-y-6">
             {/* Summary Dashboard */}
             <SummaryDashboard
               key={`dashboard-${violations.length}-${violations.filter(v => v.severity === 'error').length}-${violations.filter(v => v.severity === 'warning').length}`}
@@ -267,6 +283,7 @@ function App() {
               violations={violations}
               constraints={constraints}
             />
+
             {/* Charts Grid */}
             <div className="w-full">
               <EnhancedCharts
@@ -280,7 +297,7 @@ function App() {
             <div className="w-full">
               <AnalysisPanel violations={violations} />
             </div>
-          </>
+          </div>
         )}
 
         {/* Route Analysis Tab */}
@@ -300,6 +317,40 @@ function App() {
             trajectory={trajectoryData}
             constraints={constraints}
           />
+        )}
+
+        {/* Editor Tab */}
+        {activeView === 'editor' && (
+          <div className="space-y-6">
+            <FieldSelector
+              selectedField={selectedField}
+              onFieldChange={setSelectedField}
+            />
+            <PathEditor
+              onPathCreated={(trajectory) => {
+                // Process the created trajectory
+                const enrichedTrajectory = calculateKinematics(trajectory);
+                const v = validateTrajectory(enrichedTrajectory, constraints);
+
+                setTrajectoryData(enrichedTrajectory);
+                setFileName('Custom Path');
+                setViolations(v);
+
+                // Save to history
+                saveToHistory({
+                  fileName: 'Custom Path',
+                  trajectoryData: enrichedTrajectory,
+                  violations: v,
+                  constraints: constraints
+                });
+
+                showToast('Custom path created successfully!', 'success');
+                setActiveView('analysis'); // Switch to analysis view
+              }}
+              constraints={constraints}
+              selectedField={selectedField}
+            />
+          </div>
         )}
       </main>
 
@@ -329,6 +380,24 @@ function App() {
           violations={violations}
           constraints={constraints}
           onClose={() => setShowOptimization(false)}
+          onOptimizedPath={(optimizedPath) => {
+            // Process the optimized trajectory
+            const enrichedTrajectory = calculateKinematics(optimizedPath);
+            const v = validateTrajectory(enrichedTrajectory, constraints);
+
+            setTrajectoryData(enrichedTrajectory);
+            setViolations(v);
+
+            // Save to history
+            saveToHistory({
+              fileName: fileName + ' (Optimized)',
+              trajectoryData: enrichedTrajectory,
+              violations: v,
+              constraints: constraints
+            });
+
+            showToast('Path optimized successfully!', 'success');
+          }}
         />
       )}
 
