@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { getGameConfig, listGames } from './config/gameConfig.js'
+import { GameContext } from './contexts/GameContext.jsx'
 import { FileUpload } from './components/FileUpload'
 import { ConstraintsForm } from './components/ConstraintsForm'
 import { AnalysisPanel } from './components/AnalysisPanel'
@@ -25,6 +27,18 @@ import { parseShareURL } from './utils/shareUtils'
 import { Activity, Loader2, History, Share2, Github, Sparkles, Route, PenTool, Play, Pause, Square } from 'lucide-react'
 
 function App() {
+  // Get initial game from localStorage or default to 2025
+  const initialGame = localStorage.getItem('selectedGame') || '2025';
+  const [selectedGame, setSelectedGame] = useState(initialGame);
+
+  // Get game config based on selection
+  const gameConfig = useMemo(() => getGameConfig(selectedGame), [selectedGame]);
+
+  const handleGameChange = (gameId) => {
+    setSelectedGame(gameId);
+    localStorage.setItem('selectedGame', gameId);
+  };
+
   const [trajectoryData, setTrajectoryData] = useState([]);
   const [violations, setViolations] = useState([]);
   const [fileName, setFileName] = useState("");
@@ -170,7 +184,8 @@ function App() {
   }, [constraints, trajectoryData]);
 
   return (
-    <div className="min-h-screen bg-neutral-900 text-gray-100">
+    <GameContext.Provider value={gameConfig}>
+      <div className="min-h-screen bg-neutral-900 text-gray-100">
       {/* Header - Full Width */}
       <header className="bg-neutral-800 border-b border-neutral-700 px-8 py-6">
         <div className="w-full flex items-center justify-between">
@@ -496,6 +511,7 @@ function App() {
         </div>
       </footer>
     </div>
+    </GameContext.Provider>
   )
 }
 
