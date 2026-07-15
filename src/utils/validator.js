@@ -1,5 +1,53 @@
+// Game-specific validation rules
+export const VALIDATION_RULES = {
+  '2025': {
+    velocityLimit: 5.0,
+    accelerationLimit: 3.0,
+    jerkLimit: 4.0,
+    constraints: {
+      coralHeightValidation: [2, 3, 4],
+      reefApproachMinDistance: 0.5,
+      bargeApproachMinDistance: 0.3,
+      maxTrajectoryTime: 150,
+      processorApproachMinDistance: 0.3,
+      netApproachMinDistance: 0.3
+    }
+  },
+  '2026': {
+    velocityLimit: 5.0,
+    accelerationLimit: 3.0,
+    jerkLimit: 4.0,
+    constraints: {
+      towerHeightValidation: [0.686, 1.143, 1.600],
+      towerApproachMinDistance: 1.0,
+      hubApproachMinDistance: 0.3,
+      depotApproachMinDistance: 0.2,
+      trenchClearanceHeight: 0.2,
+      maxTrajectoryTime: 150,
+      towerClimbWindow: 30
+    }
+  }
+};
 
-export function validateTrajectory(trajectory, constraints) {
+export function validateTrajectory(trajectory, gameYearOrConstraints = '2025', customConstraints = {}) {
+  // Support both old API (constraints as second param) and new API (gameYear as string, constraints as third param)
+  let constraints;
+  let gameYear = '2025';
+
+  if (typeof gameYearOrConstraints === 'string') {
+    // New API: gameYear passed as string
+    gameYear = gameYearOrConstraints;
+    const rules = VALIDATION_RULES[gameYear];
+    if (!rules) {
+      console.warn(`No rules found for game year ${gameYear}, using 2025 defaults`);
+      gameYear = '2025';
+    }
+    constraints = { ...VALIDATION_RULES[gameYear], ...customConstraints };
+  } else {
+    // Old API: constraints object passed directly (backward compatibility)
+    constraints = gameYearOrConstraints;
+  }
+
     const violations = [];
 
     if (!trajectory || trajectory.length < 2) {
