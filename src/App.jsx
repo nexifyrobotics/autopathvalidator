@@ -17,6 +17,7 @@ import { RouteAnalyzer } from './components/RouteAnalyzer'
 import PathEditor from './components/PathEditor'
 import PathOptimizer from './components/PathOptimizer'
 import FieldSelector from './components/FieldSelector'
+import GameSelector from './components/GameSelector'
 import RealTimeVisualization from './components/RealTimeVisualization'
 import { parseTrajectory } from './utils/parser'
 import { calculateKinematics } from './utils/kinematics'
@@ -196,6 +197,7 @@ function App() {
             </h1>
             <span className="text-sm text-gray-500 font-mono">v1.0.0</span>
           </div>
+          <GameSelector value={selectedGame} onChange={handleGameChange} />
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowOptimization(!showOptimization)}

@@ -39,3 +39,42 @@
 .read-the-docs {
   color: #888;
 }
+
+/* GameSelector Styling */
+.game-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.game-selector-label {
+  font-weight: 600;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.game-selector-select {
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  border: 1px solid #374151;
+  background: #1f2937;
+  color: #f3f4f6;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.game-selector-select:hover {
+  border-color: #4b5563;
+  background: #111827;
+}
+
+.game-selector-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
