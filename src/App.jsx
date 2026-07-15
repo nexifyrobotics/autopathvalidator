@@ -203,7 +203,7 @@ function App() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
               Auto Path Validator
             </h1>
-            <span className="text-sm text-gray-500 font-mono">v1.0.0</span>
+            <span className="text-sm text-gray-500 font-mono">v2.0.0</span>
           </div>
           <GameSelector value={selectedGame} onChange={handleGameChange} />
           <div className="flex items-center gap-3">

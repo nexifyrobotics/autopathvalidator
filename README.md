@@ -1,21 +1,33 @@
-# Auto Path Validator v1.0.0
+# Auto Path Validator v2.0.0
 
-**Advanced FRC Autonomous Path Planning & Analysis Tool** - Design, validate, and optimize autonomous paths for FRC robots with specialized FRC 2025 Reefscape strategies.
+**Advanced FRC Autonomous Path Planning & Analysis Tool** - Design, validate, and optimize autonomous paths for FRC robots with full support for **FRC 2025 Reefscape** and **FRC 2026 REBUILT** games.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![FRC](https://img.shields.io/badge/FRC-2025-red)
+![FRC Games](https://img.shields.io/badge/FRC-2025%20%2B%202026-red)
 ![React](https://img.shields.io/badge/React-19.2.0-blue)
 ![Vite](https://img.shields.io/badge/Vite-7.2.4-yellow)
 
+## 🎮 Supported Games
+
+- **2025 Reefscape** — Coral scoring, Algae collection, Barge climbing
+- **2026 REBUILT** — FUEL scoring, TOWER climbing, Dynamic hub switching
+
 ## 🚀 Features
 
-### 🎯 **Path Analysis & Validation**
+### 🎯 **Path Analysis & Validation** (Both Games)
 - ✅ **JSON Trajectory Analysis**: Validate PathPlanner and WPILib trajectories
 - ✅ **Screenshot Processing**: Upload PathPlanner screenshots for instant analysis
 - 📊 **Advanced Visualization**: Interactive charts for velocity, acceleration, and jerk
 - 🎯 **Smart Violation Detection**: AI-powered suggestions for constraint violations
 - 🔧 **Customizable Constraints**: Set precise robot physical limits
+
+### 🔄 **Multi-Game Support**
+- ✅ **Game Selector**: Switch between 2025 and 2026 at runtime
+- ✅ **Dual Feature Set**: Full support for both game mechanics
+- ✅ **Game-Aware Validation**: Rules engine adapts by game year
+- ✅ **60+ Templates**: 20+ for 2025, 40+ for 2026
+- ✅ **Persistent Selection**: Remember your game choice
 
 ### 🎮 **Path Editor & Design**
 - ✅ **Interactive Path Editor**: Design paths with waypoint-based interface
@@ -24,12 +36,19 @@
 - ✅ **Real-time Preview**: Visual path preview with coordinate editing
 - ✅ **Template Management**: Import/export custom path templates
 
-### 🏆 **FRC 2025 Reefscape Optimization**
+### 🎯 **2025 Reefscape Features**
 - ✅ **Coral Scoring Strategies**: L2, L3, L4 level approaches and techniques
 - ✅ **Algae Collection Paths**: Ground pickup, processor, and net scoring
 - ✅ **Endgame Excellence**: Barge climb positioning and chain strategies
 - ✅ **Advanced Tactics**: Defense evasion, triple threat autos, combo plays
 - ✅ **Mobility Maximization**: Optimal bonus point collection routes
+
+### 🎯 **2026 REBUILT Features**
+- ✅ **TOWER Climbing Paths**: Strategies for LOW, MID, and HIGH level climbs
+- ✅ **FUEL Scoring Routes**: Depot collection, hub scoring, multi-cycle strategies
+- ✅ **Dynamic Hub Switching**: Adapt to hub activation timing (auto/teleop/endgame)
+- ✅ **Obstacle Navigation**: Trench crossing, bump navigation, complex routing
+- ✅ **Endgame Strategies**: Final 30-second climb sequences and positioning
 
 ### ⚡ **Optimization & Analytics**
 - ✅ **Multi-algorithm Optimization**: Smooth, energy-efficient, and balanced modes

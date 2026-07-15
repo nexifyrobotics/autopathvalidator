@@ -1,8 +1,9 @@
 {
   "name": "autopathvalidator",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
+  "description": "Advanced FRC Autonomous Path Planning & Validation Tool - Support for FRC 2025 Reefscape and 2026 REBUILT",
   "scripts": {
     "build": "vite build",
     "lint": "eslint .",
