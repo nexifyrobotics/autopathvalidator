@@ -499,6 +499,428 @@ export default {
         complexity: 'hard'
       },
       starred: false
+    },
+    {
+      id: 'rapid-fuel-collection',
+      gameYear: 2026,
+      name: 'Rapid Fuel Collection',
+      description: 'Quick multi-ball collection from ground',
+      difficulty: 'Medium',
+      category: 'fuel-scoring',
+      tags: ['2026', 'fuel', 'rapid', 'collection'],
+      waypoints: [
+        { x: 2.5, y: 8.27 },
+        { x: 2.5, y: 6.5 },
+        { x: 2.5, y: 4.5 },
+        { x: 2.5, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'FUEL_SCORE',
+        fuelCount: 7,
+        estimatedPoints: 7,
+        timingWindow: 'teleop',
+        complexity: 'medium'
+      },
+      starred: false
+    },
+    {
+      id: 'tower-dual-mid',
+      gameYear: 2026,
+      name: 'Dual TOWER - MID',
+      description: 'Two robots reaching MID level for 40 points',
+      difficulty: 'Hard',
+      category: 'tower-climbing',
+      tags: ['2026', 'tower', 'mid', 'dual'],
+      waypoints: [
+        { x: 2.0, y: 8.27 },
+        { x: 3.5, y: 8.27 },
+        { x: 4.04, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'TOWER_CLIMB',
+        targetHeight: 'MID',
+        estimatedPoints: 40,
+        robotCount: 2,
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'corner-hub-fuel',
+      gameYear: 2026,
+      name: 'Corner HUB Entry',
+      description: 'Approach hub from corner angle',
+      difficulty: 'Medium',
+      category: 'fuel-scoring',
+      tags: ['2026', 'fuel', 'hub', 'corner'],
+      waypoints: [
+        { x: 1.5, y: 8.27 },
+        { x: 2.0, y: 8.0 },
+        { x: 2.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'FUEL_SCORE',
+        fuelCount: 2,
+        estimatedPoints: 2,
+        complexity: 'medium'
+      },
+      starred: false
+    },
+    {
+      id: 'endgame-double-tower',
+      gameYear: 2026,
+      name: 'Endgame Double Climb',
+      description: 'Two robots climbing during endgame phase',
+      difficulty: 'Hard',
+      category: 'endgame',
+      tags: ['2026', 'tower', 'endgame', 'dual'],
+      waypoints: [
+        { x: 3.0, y: 8.27 },
+        { x: 4.04, y: 8.27 },
+        { x: 5.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'ENDGAME_CLIMB',
+        estimatedPoints: 50,
+        robotCount: 2,
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'trench-to-hub',
+      gameYear: 2026,
+      name: 'Trench → HUB Path',
+      description: 'Navigate trench then score in hub',
+      difficulty: 'Hard',
+      category: 'combo',
+      tags: ['2026', 'trench', 'hub', 'fuel'],
+      waypoints: [
+        { x: 1.5, y: 2.0 },
+        { x: 2.0, y: 4.0 },
+        { x: 2.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'COMBO_SCORING',
+        estimatedPoints: 4,
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'quick-hub-score',
+      gameYear: 2026,
+      name: 'Quick HUB Score',
+      description: 'Fastest path to score single fuel',
+      difficulty: 'Easy',
+      category: 'fuel-scoring',
+      tags: ['2026', 'fuel', 'quick', 'auto'],
+      waypoints: [
+        { x: 1.5, y: 8.27 },
+        { x: 2.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'FUEL_SCORE',
+        fuelCount: 1,
+        estimatedPoints: 1,
+        complexity: 'easy'
+      },
+      starred: false
+    },
+    {
+      id: 'red-alliance-depot',
+      gameYear: 2026,
+      name: 'Red Alliance Depot Run',
+      description: 'Collect and score from red depot',
+      difficulty: 'Medium',
+      category: 'fuel-scoring',
+      tags: ['2026', 'fuel', 'depot', 'red'],
+      waypoints: [
+        { x: 6.07, y: 8.27 },
+        { x: 7.0, y: 12.0 },
+        { x: 7.57, y: 12.0 }
+      ],
+      strategy: {
+        objective: 'FUEL_SCORE',
+        fuelCount: 4,
+        estimatedPoints: 4,
+        complexity: 'medium'
+      },
+      starred: false
+    },
+    {
+      id: 'zigzag-fuel-collection',
+      gameYear: 2026,
+      name: 'Zigzag Collection Path',
+      description: 'Serpentine path for multiple fuel pickups',
+      difficulty: 'Hard',
+      category: 'fuel-scoring',
+      tags: ['2026', 'fuel', 'zigzag', 'multi'],
+      waypoints: [
+        { x: 2.0, y: 8.27 },
+        { x: 2.5, y: 6.0 },
+        { x: 2.0, y: 4.0 },
+        { x: 3.0, y: 6.0 },
+        { x: 2.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'FUEL_SCORE',
+        fuelCount: 6,
+        estimatedPoints: 6,
+        timingWindow: 'teleop',
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'bump-climb-tower',
+      gameYear: 2026,
+      name: 'Bump → TOWER Path',
+      description: 'Navigate bump then climb tower',
+      difficulty: 'Hard',
+      category: 'combo',
+      tags: ['2026', 'bump', 'tower', 'combo'],
+      waypoints: [
+        { x: 1.0, y: 6.0 },
+        { x: 2.5, y: 5.0 },
+        { x: 4.04, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'COMBO_AUTO',
+        estimatedPoints: 18,
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'center-hub-approach',
+      gameYear: 2026,
+      name: 'Center HUB Approach',
+      description: 'Approach either hub from center position',
+      difficulty: 'Easy',
+      category: 'fuel-scoring',
+      tags: ['2026', 'hub', 'center', 'flexible'],
+      waypoints: [
+        { x: 4.04, y: 8.27 },
+        { x: 3.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'POSITIONING',
+        estimatedPoints: 0,
+        complexity: 'easy'
+      },
+      starred: false
+    },
+    {
+      id: 'defense-positioning',
+      gameYear: 2026,
+      name: 'Defensive Center Position',
+      description: 'Strategic center field defense',
+      difficulty: 'Medium',
+      category: 'defense',
+      tags: ['2026', 'defense', 'center', 'positioning'],
+      waypoints: [
+        { x: 4.04, y: 8.27 },
+        { x: 4.04, y: 6.0 },
+        { x: 4.04, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'DEFENSE',
+        estimatedPoints: 0,
+        complexity: 'medium'
+      },
+      starred: false
+    },
+    {
+      id: 'side-hub-rapid',
+      gameYear: 2026,
+      name: 'Side HUB Rapid Score',
+      description: 'Quick scoring from alliance side',
+      difficulty: 'Easy',
+      category: 'fuel-scoring',
+      tags: ['2026', 'fuel', 'side', 'rapid'],
+      waypoints: [
+        { x: 2.0, y: 8.27 },
+        { x: 2.0, y: 7.0 },
+        { x: 2.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'FUEL_SCORE',
+        fuelCount: 2,
+        estimatedPoints: 2,
+        complexity: 'easy'
+      },
+      starred: false
+    },
+    {
+      id: 'tower-high-endgame-high-risk',
+      gameYear: 2026,
+      name: 'HIGH Tower Endgame Push',
+      description: 'High-risk HIGH level climb during final seconds',
+      difficulty: 'Hard',
+      category: 'endgame',
+      tags: ['2026', 'tower', 'high', 'endgame', 'risky'],
+      waypoints: [
+        { x: 3.5, y: 8.27 },
+        { x: 4.04, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'TOWER_CLIMB',
+        targetHeight: 'HIGH',
+        estimatedPoints: 30,
+        timingWindow: 'endgame-final-seconds',
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'three-ball-auto',
+      gameYear: 2026,
+      name: '3-Ball Auto Routine',
+      description: 'Autonomous routine scoring 3 fuel balls',
+      difficulty: 'Hard',
+      category: 'combo',
+      tags: ['2026', 'fuel', 'auto', '3-ball'],
+      waypoints: [
+        { x: 2.0, y: 8.27 },
+        { x: 2.5, y: 6.0 },
+        { x: 2.0, y: 4.0 },
+        { x: 2.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'AUTO_SCORING',
+        fuelCount: 3,
+        estimatedPoints: 3,
+        timingWindow: 'autonomous',
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'cooperative-tower',
+      gameYear: 2026,
+      name: 'Cooperative Tower Setup',
+      description: 'Set up for alliance partner to climb',
+      difficulty: 'Medium',
+      category: 'combo',
+      tags: ['2026', 'tower', 'cooperative', 'alliance'],
+      waypoints: [
+        { x: 3.0, y: 8.27 },
+        { x: 3.5, y: 8.27 },
+        { x: 4.04, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'ALLIANCE_SUPPORT',
+        estimatedPoints: 0,
+        complexity: 'medium'
+      },
+      starred: false
+    },
+    {
+      id: 'wide-field-traverse',
+      gameYear: 2026,
+      name: 'Wide Field Traverse',
+      description: 'Cross full field width for maximum positioning',
+      difficulty: 'Medium',
+      category: 'mobility',
+      tags: ['2026', 'mobility', 'traverse', 'width'],
+      waypoints: [
+        { x: 1.0, y: 8.27 },
+        { x: 3.0, y: 8.27 },
+        { x: 5.0, y: 8.27 },
+        { x: 7.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'POSITIONING',
+        estimatedPoints: 0,
+        complexity: 'medium'
+      },
+      starred: false
+    },
+    {
+      id: 'depot-hub-fuel-loop',
+      gameYear: 2026,
+      name: 'Depot → HUB Loop',
+      description: 'Continuous loop between depot and hub',
+      difficulty: 'Hard',
+      category: 'fuel-scoring',
+      tags: ['2026', 'fuel', 'depot', 'loop', 'continuous'],
+      waypoints: [
+        { x: 0.5, y: 12.0 },
+        { x: 2.0, y: 8.27 },
+        { x: 0.5, y: 12.0 }
+      ],
+      strategy: {
+        objective: 'FUEL_SCORE',
+        fuelCount: 4,
+        estimatedPoints: 4,
+        timingWindow: 'teleop',
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'balanced-scoring',
+      gameYear: 2026,
+      name: 'Balanced Scoring Strategy',
+      description: 'Mix tower climbing and fuel scoring',
+      difficulty: 'Hard',
+      category: 'combo',
+      tags: ['2026', 'tower', 'fuel', 'balanced'],
+      waypoints: [
+        { x: 2.0, y: 8.27 },
+        { x: 4.04, y: 8.27 },
+        { x: 2.0, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'BALANCED_SCORING',
+        estimatedPoints: 20,
+        timingWindow: 'full-match',
+        complexity: 'hard'
+      },
+      starred: false
+    },
+    {
+      id: 'penalty-avoidance',
+      gameYear: 2026,
+      name: 'Penalty Avoidance Route',
+      description: 'Safe path avoiding fouls',
+      difficulty: 'Easy',
+      category: 'defense',
+      tags: ['2026', 'safety', 'fouls', 'avoidance'],
+      waypoints: [
+        { x: 4.04, y: 8.27 },
+        { x: 4.04, y: 10.0 },
+        { x: 4.04, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'SAFETY',
+        estimatedPoints: 0,
+        complexity: 'easy'
+      },
+      starred: false
+    },
+    {
+      id: 'maximum-efficiency',
+      gameYear: 2026,
+      name: 'Maximum Efficiency Path',
+      description: 'Optimize for lowest time, highest score',
+      difficulty: 'Hard',
+      category: 'combo',
+      tags: ['2026', 'efficiency', 'optimization', 'speed'],
+      waypoints: [
+        { x: 2.0, y: 8.27 },
+        { x: 2.5, y: 6.5 },
+        { x: 2.0, y: 8.27 },
+        { x: 4.04, y: 8.27 }
+      ],
+      strategy: {
+        objective: 'EFFICIENCY',
+        estimatedPoints: 18,
+        timingWindow: 'auto-teleop',
+        complexity: 'hard'
+      },
+      starred: false
     }
   ],
 
