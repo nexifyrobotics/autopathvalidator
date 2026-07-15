@@ -23,7 +23,8 @@ import {
   Activity,
   BarChart
 } from 'lucide-react';
-import { getFieldDimensions } from '../utils/fieldDimensions';
+import { useGame } from '../contexts/GameContext.jsx';
+import { getFieldDimensions, getGameFieldDimensions } from '../utils/fieldDimensions';
 
 // Animation frame callback function
 function animateFrame(callback) {
@@ -244,6 +245,7 @@ const FieldCanvas = ({ trajectoryData, currentIndex, fieldDimensions, showTrail 
 };
 
 const RealTimeVisualization = ({ trajectoryData = [] }) => {
+  const gameConfig = useGame();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [speed, setSpeed] = useState(1);
@@ -258,7 +260,14 @@ const RealTimeVisualization = ({ trajectoryData = [] }) => {
   const frameCount = useRef(0);
   const lastFpsUpdate = useRef(Date.now());
 
-  const fieldDimensions = useMemo(() => getFieldDimensions('2024'), []);
+  const fieldDimensions = useMemo(() => {
+    try {
+      return getGameFieldDimensions(gameConfig.year);
+    } catch (error) {
+      console.warn('Error loading game field dimensions, using fallback');
+      return getFieldDimensions('2024');
+    }
+  }, [gameConfig.year]);
   const lastIndex = Math.max(0, trajectoryData.length - 1);
 
   // Calculate constraint violations

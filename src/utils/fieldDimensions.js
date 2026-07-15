@@ -1,4 +1,5 @@
 // FRC Field dimensions for different years
+import { getGameConfig } from '../config/gameConfig.js';
 
 export const FIELD_DIMENSIONS = {
     '2024': {
@@ -48,5 +49,21 @@ export function loadCustomFieldDimensions() {
     } catch (error) {
         console.error('Error loading custom field dimensions:', error);
     }
+}
+
+// Game-aware field functions
+export function getGameFieldDimensions(gameYear = '2025') {
+    const gameConfig = getGameConfig(gameYear);
+    return {
+        width: gameConfig.field.width,
+        length: gameConfig.field.length,
+        name: gameConfig.field.name,
+        elements: gameConfig.field.elements
+    };
+}
+
+export function getGameFieldElements(gameYear = '2025') {
+    const gameConfig = getGameConfig(gameYear);
+    return gameConfig.field.elements;
 }
 
