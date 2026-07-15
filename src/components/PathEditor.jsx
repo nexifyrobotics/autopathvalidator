@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, Minus, Save, Trash2, Edit3, MapPin, Target, AlertTriangle, Grid3x3 } from 'lucide-react';
+import { Plus, Trash2, Save, Grid3x3, MapPin, Target, AlertTriangle } from 'lucide-react';
 import { useGame } from '../contexts/GameContext.jsx';
 import PathTemplates from './PathTemplates';
 
@@ -8,7 +8,6 @@ const PathEditor = ({ onPathCreated, constraints }) => {
   const [waypoints, setWaypoints] = useState([]);
   const [showTemplates, setShowTemplates] = useState(false);
 
-  // Get field boundaries from game config
   const fieldBounds = useMemo(() => ({
     width: gameConfig.field.width,
     length: gameConfig.field.length,
@@ -18,22 +17,19 @@ const PathEditor = ({ onPathCreated, constraints }) => {
     maxY: gameConfig.field.length
   }), [gameConfig]);
 
-  // Add a new waypoint
   const addWaypoint = () => {
     const newWaypoint = {
-      x: fieldBounds.maxX / 2,
-      y: fieldBounds.maxY / 2,
+      x: parseFloat((fieldBounds.maxX / 2).toFixed(1)),
+      y: parseFloat((fieldBounds.maxY / 2).toFixed(1)),
       id: Date.now()
     };
     setWaypoints([...waypoints, newWaypoint]);
   };
 
-  // Remove a waypoint
   const removeWaypoint = (index) => {
     setWaypoints(waypoints.filter((_, i) => i !== index));
   };
 
-  // Update waypoint coordinates
   const updateWaypoint = (index, field, value) => {
     const parsedValue = parseFloat(value) || 0;
     const clampedValue = field === 'x'
@@ -41,12 +37,11 @@ const PathEditor = ({ onPathCreated, constraints }) => {
       : Math.max(fieldBounds.minY, Math.min(fieldBounds.maxY, parsedValue));
 
     const updatedWaypoints = waypoints.map((wp, i) =>
-      i === index ? { ...wp, [field]: clampedValue } : wp
+      i === index ? { ...wp, [field]: parseFloat(clampedValue.toFixed(1)) } : wp
     );
     setWaypoints(updatedWaypoints);
   };
 
-  // Generate trajectory from waypoints
   const generateTrajectory = () => {
     if (waypoints.length < 2) {
       alert('Please add at least 2 waypoints');
@@ -66,7 +61,6 @@ const PathEditor = ({ onPathCreated, constraints }) => {
         const dx = point.x - prev.x;
         const dy = point.y - prev.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-
         velocity = distance / timeStep;
         acceleration = index === 1 ? velocity / timeStep : 0;
       }
@@ -86,12 +80,10 @@ const PathEditor = ({ onPathCreated, constraints }) => {
     onPathCreated && onPathCreated(trajectory);
   };
 
-  // Clear all waypoints
   const clearWaypoints = () => {
     setWaypoints([]);
   };
 
-  // Calculate total path distance
   const totalDistance = useMemo(() => {
     let distance = 0;
     for (let i = 1; i < waypoints.length; i++) {
@@ -103,116 +95,94 @@ const PathEditor = ({ onPathCreated, constraints }) => {
   }, [waypoints]);
 
   return (
-    <div className="path-editor">
-      {/* Header with Game Info */}
-      <div className="editor-header">
-        <div className="header-left">
-          <h2 className="editor-title">Path Editor</h2>
-          <p className="game-info">{gameConfig.year} {gameConfig.name}</p>
+    <div className="path-editor-container">
+      {/* Header */}
+      <div className="pe-header">
+        <div className="pe-header-left">
+          <h2 className="pe-title">Path Editor</h2>
+          <p className="pe-subtitle">{gameConfig.year} {gameConfig.name}</p>
         </div>
-        <div className="header-right">
-          <div className="field-bounds">
-            <span className="bound-label">Field: {fieldBounds.maxX.toFixed(1)}m × {fieldBounds.maxY.toFixed(1)}m</span>
-          </div>
+        <div className="pe-header-right">
+          <span className="pe-field-info">Field: {fieldBounds.maxX.toFixed(1)}m × {fieldBounds.maxY.toFixed(1)}m</span>
         </div>
       </div>
 
-      {/* Two-Column Layout */}
-      <div className="editor-grid">
-        {/* Left Column: Waypoints Editor */}
-        <div className="editor-column waypoints-column">
-          {/* Toolbar */}
-          <div className="editor-toolbar">
-            <button
-              onClick={addWaypoint}
-              className="btn btn-primary"
-              title="Add a new waypoint to the path"
-            >
+      {/* Main Content */}
+      <div className="pe-main">
+        {/* Left Panel - Waypoints */}
+        <div className="pe-panel pe-panel-waypoints">
+          {/* Controls */}
+          <div className="pe-controls">
+            <button onClick={addWaypoint} className="pe-btn pe-btn-add">
               <Plus size={16} />
-              <span>Add</span>
+              Add
             </button>
-
-            <button
-              onClick={clearWaypoints}
-              disabled={waypoints.length === 0}
-              className="btn btn-danger"
-              title="Clear all waypoints"
-            >
+            <button onClick={clearWaypoints} disabled={waypoints.length === 0} className="pe-btn pe-btn-clear">
               <Trash2 size={16} />
-              <span>Clear</span>
+              Clear
             </button>
-
-            <button
-              onClick={generateTrajectory}
-              disabled={waypoints.length < 2}
-              className="btn btn-success"
-              title="Generate and validate the path"
-            >
+            <button onClick={generateTrajectory} disabled={waypoints.length < 2} className="pe-btn pe-btn-generate">
               <Save size={16} />
-              <span>Generate</span>
+              Generate
             </button>
-
-            <button
-              onClick={() => setShowTemplates(!showTemplates)}
-              className="btn btn-secondary"
-              title="Load from templates"
-            >
+            <button onClick={() => setShowTemplates(!showTemplates)} className="pe-btn pe-btn-templates">
               <Grid3x3 size={16} />
-              <span>Templates</span>
+              Templates
             </button>
           </div>
 
           {/* Waypoints List */}
-          <div className="waypoints-section">
-            <h3 className="section-title">
-              <MapPin size={18} />
+          <div className="pe-waypoints">
+            <h3 className="pe-section-title">
+              <MapPin size={16} />
               Waypoints ({waypoints.length})
             </h3>
 
             {waypoints.length === 0 ? (
-              <div className="empty-state">
+              <div className="pe-empty">
                 <Target size={32} />
                 <p>No waypoints added</p>
-                <p className="text-xs">Click "Add" to create waypoints</p>
+                <span className="pe-empty-hint">Click "Add" to create</span>
               </div>
             ) : (
-              <div className="waypoints-list">
+              <div className="pe-waypoints-list">
                 {waypoints.map((waypoint, index) => (
-                  <div key={waypoint.id} className="waypoint-item">
-                    <div className="waypoint-header">
-                      <span className="waypoint-number">#{index + 1}</span>
+                  <div key={waypoint.id} className="pe-waypoint-card">
+                    <div className="pe-waypoint-header">
+                      <span className="pe-waypoint-index">#{index + 1}</span>
                       <button
                         onClick={() => removeWaypoint(index)}
-                        className="btn-remove"
-                        title="Remove this waypoint"
+                        className="pe-waypoint-remove"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
-                    <div className="waypoint-inputs">
-                      <div className="coord-input">
+                    <div className="pe-waypoint-coords">
+                      <div className="pe-coord">
                         <label>X</label>
                         <input
                           type="number"
                           step="0.1"
                           min={fieldBounds.minX}
                           max={fieldBounds.maxX}
-                          value={waypoint.x.toFixed(1)}
+                          value={waypoint.x}
                           onChange={(e) => updateWaypoint(index, 'x', e.target.value)}
-                          className="input-field"
+                          className="pe-input"
                         />
+                        <span className="pe-unit">m</span>
                       </div>
-                      <div className="coord-input">
+                      <div className="pe-coord">
                         <label>Y</label>
                         <input
                           type="number"
                           step="0.1"
                           min={fieldBounds.minY}
                           max={fieldBounds.maxY}
-                          value={waypoint.y.toFixed(1)}
+                          value={waypoint.y}
                           onChange={(e) => updateWaypoint(index, 'y', e.target.value)}
-                          className="input-field"
+                          className="pe-input"
                         />
+                        <span className="pe-unit">m</span>
                       </div>
                     </div>
                   </div>
@@ -220,92 +190,107 @@ const PathEditor = ({ onPathCreated, constraints }) => {
               </div>
             )}
           </div>
+
+          {/* Templates Section */}
+          {showTemplates && (
+            <div className="pe-templates">
+              <PathTemplates
+                onLoadTemplate={(templateWaypoints) => {
+                  setWaypoints(templateWaypoints.map((wp, i) => ({ ...wp, id: Date.now() + i })));
+                  setShowTemplates(false);
+                }}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Right Column: Preview & Info */}
-        <div className="editor-column preview-column">
+        {/* Right Panel - Preview & Info */}
+        <div className="pe-panel pe-panel-preview">
           {/* Path Summary */}
-          <div className="info-card">
-            <h3 className="section-title">
-              <Target size={18} />
-              Path Summary
+          <div className="pe-card">
+            <h3 className="pe-section-title">
+              <Target size={16} />
+              Summary
             </h3>
             {waypoints.length > 0 ? (
-              <div className="summary-info">
-                <div className="info-item">
-                  <span className="label">Total Distance:</span>
-                  <span className="value">{totalDistance}m</span>
+              <div className="pe-summary">
+                <div className="pe-stat">
+                  <span className="pe-stat-label">Distance:</span>
+                  <span className="pe-stat-value">{totalDistance}m</span>
+                </div>
+                <div className="pe-stat">
+                  <span className="pe-stat-label">Waypoints:</span>
+                  <span className="pe-stat-value">{waypoints.length}</span>
                 </div>
                 {waypoints.length > 1 && (
                   <>
-                    <div className="info-item">
-                      <span className="label">Start:</span>
-                      <span className="value">({waypoints[0].x.toFixed(2)}, {waypoints[0].y.toFixed(2)})</span>
+                    <div className="pe-stat">
+                      <span className="pe-stat-label">Start:</span>
+                      <span className="pe-stat-value">({waypoints[0].x}, {waypoints[0].y})</span>
                     </div>
-                    <div className="info-item">
-                      <span className="label">End:</span>
-                      <span className="value">
-                        ({waypoints[waypoints.length - 1].x.toFixed(2)}, {waypoints[waypoints.length - 1].y.toFixed(2)})
+                    <div className="pe-stat">
+                      <span className="pe-stat-label">End:</span>
+                      <span className="pe-stat-value">
+                        ({waypoints[waypoints.length - 1].x}, {waypoints[waypoints.length - 1].y})
                       </span>
                     </div>
                   </>
                 )}
               </div>
             ) : (
-              <p className="empty-text">Add waypoints to see summary</p>
+              <p className="pe-no-data">Add waypoints to see summary</p>
             )}
           </div>
 
-          {/* Path Visualization */}
+          {/* Path Sequence */}
           {waypoints.length > 0 && (
-            <div className="info-card">
-              <h4 className="section-subtitle">Path Visualization</h4>
-              <div className="path-viz">
-                <pre className="viz-text">
-                  {waypoints.map((wp, i) =>
-                    `${i + 1}. (${wp.x.toFixed(1)}, ${wp.y.toFixed(1)})${i < waypoints.length - 1 ? ' →' : ''}`
-                  ).join('\n')}
-                </pre>
+            <div className="pe-card">
+              <h4 className="pe-card-title">Path Sequence</h4>
+              <div className="pe-sequence">
+                {waypoints.map((wp, i) => (
+                  <div key={wp.id} className="pe-seq-item">
+                    <span className="pe-seq-num">{i + 1}</span>
+                    <span className="pe-seq-coords">({wp.x}, {wp.y})</span>
+                    {i < waypoints.length - 1 && <span className="pe-seq-arrow">→</span>}
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {/* Game Info */}
-          <div className="info-card game-info-card">
-            <h4 className="section-subtitle">Game Info</h4>
-            <div className="game-details">
-              <p><strong>Year:</strong> {gameConfig.year}</p>
-              <p><strong>Game:</strong> {gameConfig.name}</p>
-              <p><strong>Field:</strong> {fieldBounds.maxX.toFixed(1)}m × {fieldBounds.maxY.toFixed(1)}m</p>
+          <div className="pe-card pe-card-game">
+            <h4 className="pe-card-title">Game Configuration</h4>
+            <div className="pe-game-info">
+              <div className="pe-info-row">
+                <span className="pe-info-label">Year:</span>
+                <span className="pe-info-value">{gameConfig.year}</span>
+              </div>
+              <div className="pe-info-row">
+                <span className="pe-info-label">Game:</span>
+                <span className="pe-info-value">{gameConfig.name}</span>
+              </div>
+              <div className="pe-info-row">
+                <span className="pe-info-label">Field Size:</span>
+                <span className="pe-info-value">{fieldBounds.maxX}m × {fieldBounds.maxY}m</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Templates Section (Collapsed) */}
-      {showTemplates && (
-        <div className="templates-section">
-          <PathTemplates
-            onLoadTemplate={(templateWaypoints) => {
-              setWaypoints(templateWaypoints.map((wp, index) => ({ ...wp, id: Date.now() + index })));
-              setShowTemplates(false);
-            }}
-          />
+      {/* Tips */}
+      <div className="pe-tips">
+        <AlertTriangle size={16} />
+        <div>
+          <strong>Tips:</strong>
+          <ul>
+            <li>Click "Add" to create waypoints</li>
+            <li>Edit coordinates or load from templates</li>
+            <li>Coordinates auto-clamp to field bounds</li>
+            <li>Generate path to validate and analyze</li>
+          </ul>
         </div>
-      )}
-
-      {/* Instructions */}
-      <div className="instructions-card">
-        <div className="instructions-header">
-          <AlertTriangle size={18} />
-          <h3>Tips</h3>
-        </div>
-        <ul className="instructions-list">
-          <li>Add waypoints and edit their coordinates</li>
-          <li>Load pre-built strategies from Templates</li>
-          <li>Coordinates are auto-clamped to field bounds</li>
-          <li>Click "Generate" to create and validate the path</li>
-        </ul>
       </div>
     </div>
   );
