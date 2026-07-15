@@ -35,9 +35,17 @@ function App() {
   // Get game config based on selection
   const gameConfig = useMemo(() => getGameConfig(selectedGame), [selectedGame]);
 
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   const handleGameChange = (gameId) => {
+    if (gameId === selectedGame) return;
+
+    setIsTransitioning(true);
     setSelectedGame(gameId);
     localStorage.setItem('selectedGame', gameId);
+
+    // Reset transition state after animation completes
+    setTimeout(() => setIsTransitioning(false), 300);
   };
 
   const [trajectoryData, setTrajectoryData] = useState([]);
@@ -186,7 +194,7 @@ function App() {
 
   return (
     <GameContext.Provider value={gameConfig}>
-      <div className="min-h-screen bg-neutral-900 text-gray-100">
+      <div className={`min-h-screen bg-neutral-900 text-gray-100 app ${isTransitioning ? 'transitioning' : ''}`}>
       {/* Header - Full Width */}
       <header className="bg-neutral-800 border-b border-neutral-700 px-8 py-6">
         <div className="w-full flex items-center justify-between">
