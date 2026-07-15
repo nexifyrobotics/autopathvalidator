@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GitCompare, X } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { parseTrajectory } from '../utils/parser';
 import { calculateKinematics } from '../utils/kinematics';
 import { validateTrajectory } from '../utils/validator';
 
-export function PathComparison({ constraints }) {
-    const [path1, setPath1] = useState(null);
+export function PathComparison({ constraints, trajectory, fileName, violations }) {
+    const [path1, setPath1] = useState(() => {
+        if (trajectory && trajectory.length > 0) {
+            return {
+                data: trajectory,
+                name: fileName || 'Active Path',
+                violations: violations || []
+            };
+        }
+        return null;
+    });
     const [path2, setPath2] = useState(null);
     const [violations1, setViolations1] = useState([]);
     const [violations2, setViolations2] = useState([]);
+
+    useEffect(() => {
+        if (trajectory && trajectory.length > 0 && !path1) {
+            setPath1({
+                data: trajectory,
+                name: fileName || 'Active Path',
+                violations: violations || []
+            });
+        }
+    }, [trajectory, fileName, violations, path1]);
 
     const handlePath1Upload = (json, name) => {
         try {

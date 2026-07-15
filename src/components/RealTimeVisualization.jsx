@@ -1233,12 +1233,12 @@ const RealTimeVisualization = ({ trajectoryData = [] }) => {
                       <div className="text-center">
                         <div className="text-red-400 font-mono text-xl">{constraintViolations.velocity}</div>
                         <div className="text-gray-500 text-xs">Velocity</div>
-                        <div className="text-gray-600 text-xs">> 3.8 m/s</div>
+                        <div className="text-gray-600 text-xs">&gt; 3.8 m/s</div>
                       </div>
                       <div className="text-center">
                         <div className="text-orange-400 font-mono text-xl">{constraintViolations.acceleration}</div>
                         <div className="text-gray-500 text-xs">Acceleration</div>
-                        <div className="text-gray-600 text-xs">> ±2.5 m/s²</div>
+                        <div className="text-gray-600 text-xs">&gt; ±2.5 m/s²</div>
                       </div>
                       <div className="text-center">
                         <div className={`font-mono text-xl ${constraintViolations.total > 0 ? 'text-red-400' : 'text-green-400'}`}>

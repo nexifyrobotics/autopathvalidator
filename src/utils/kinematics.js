@@ -60,6 +60,7 @@ export function calculateKinematics(trajectory) {
 
         enriched.push({
             ...current,
+            calculatedVelocity: calcVel || 0,
             calculatedAccel: calcAccel || 0,
             calculatedJerk: calcJerk || 0,
             calculatedAngVel: calcAngVel,

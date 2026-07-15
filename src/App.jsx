@@ -244,47 +244,51 @@ function App() {
         </div>
 
         {/* Tabs */}
-        {trajectoryData.length > 0 && (
-          <div className="flex space-x-2 mb-4 overflow-x-auto pb-2">
-            <button
-              onClick={() => setActiveView('analysis')}
-              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'analysis' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-            >
-              <Activity size={16} />
-              <span>Analysis</span>
-            </button>
-            <button
-              onClick={() => setActiveView('route')}
-              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'route' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-            >
-              <Route size={16} />
-              <span>Route Analyzer</span>
-            </button>
-            <button
-              onClick={() => setActiveView('compare')}
-              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'compare' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-            >
-              <Square size={16} />
-              <span>Compare</span>
-            </button>
-            <button
-              onClick={() => setActiveView('editor')}
-              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${activeView === 'editor' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-            >
-              <PenTool size={16} />
-              <span>Path Editor</span>
-            </button>
-            <button
-              onClick={() => setActiveView('realtime')}
-              disabled={!trajectoryData.length}
-              className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap ${!trajectoryData.length ? 'opacity-50 cursor-not-allowed' : ''} ${activeView === 'realtime' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-              title={!trajectoryData.length ? 'Please load a trajectory first' : ''}
-            >
-              {activeView === 'realtime' ? <Pause size={16} /> : <Play size={16} />}
-              <span>Realtime View</span>
-            </button>
-          </div>
-        )}
+        <div className="flex space-x-2 mb-4 overflow-x-auto pb-2">
+          <button
+            onClick={() => setActiveView('analysis')}
+            disabled={!trajectoryData.length}
+            className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap transition-colors ${!trajectoryData.length ? 'opacity-50 cursor-not-allowed' : ''} ${activeView === 'analysis' && trajectoryData.length ? 'bg-blue-600 text-white font-medium' : 'bg-neutral-800 hover:bg-neutral-700 text-gray-300'}`}
+            title={!trajectoryData.length ? 'Please load a trajectory first' : ''}
+          >
+            <Activity size={16} />
+            <span>Analysis</span>
+          </button>
+          <button
+            onClick={() => setActiveView('route')}
+            disabled={!trajectoryData.length}
+            className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap transition-colors ${!trajectoryData.length ? 'opacity-50 cursor-not-allowed' : ''} ${activeView === 'route' && trajectoryData.length ? 'bg-blue-600 text-white font-medium' : 'bg-neutral-800 hover:bg-neutral-700 text-gray-300'}`}
+            title={!trajectoryData.length ? 'Please load a trajectory first' : ''}
+          >
+            <Route size={16} />
+            <span>Route Analyzer</span>
+          </button>
+          <button
+            onClick={() => setActiveView('compare')}
+            disabled={!trajectoryData.length}
+            className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap transition-colors ${!trajectoryData.length ? 'opacity-50 cursor-not-allowed' : ''} ${activeView === 'compare' && trajectoryData.length ? 'bg-blue-600 text-white font-medium' : 'bg-neutral-800 hover:bg-neutral-700 text-gray-300'}`}
+            title={!trajectoryData.length ? 'Please load a trajectory first' : ''}
+          >
+            <Square size={16} />
+            <span>Compare</span>
+          </button>
+          <button
+            onClick={() => setActiveView('editor')}
+            className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap transition-colors ${activeView === 'editor' ? 'bg-blue-600 text-white font-medium' : 'bg-neutral-800 hover:bg-neutral-700 text-gray-300'}`}
+          >
+            <PenTool size={16} />
+            <span>Path Editor</span>
+          </button>
+          <button
+            onClick={() => setActiveView('realtime')}
+            disabled={!trajectoryData.length}
+            className={`px-4 py-2 rounded-md flex items-center space-x-2 whitespace-nowrap transition-colors ${!trajectoryData.length ? 'opacity-50 cursor-not-allowed' : ''} ${activeView === 'realtime' && trajectoryData.length ? 'bg-blue-600 text-white font-medium' : 'bg-neutral-800 hover:bg-neutral-700 text-gray-300'}`}
+            title={!trajectoryData.length ? 'Please load a trajectory first' : ''}
+          >
+            {activeView === 'realtime' ? <Pause size={16} /> : <Play size={16} />}
+            <span>Realtime View</span>
+          </button>
+        </div>
 
         {/* Loading State */}
         {isLoading && (
@@ -347,6 +351,8 @@ function App() {
           <PathComparison
             trajectory={trajectoryData}
             constraints={constraints}
+            fileName={fileName}
+            violations={violations}
           />
         )}
 
@@ -378,7 +384,8 @@ function App() {
             <PathEditor
               onPathCreated={(trajectory) => {
                 // Process the created trajectory
-                const enrichedTrajectory = calculateKinematics(trajectory);
+                const normalized = parseTrajectory(trajectory);
+                const enrichedTrajectory = calculateKinematics(normalized);
                 const v = validateTrajectory(enrichedTrajectory, constraints);
 
                 setTrajectoryData(enrichedTrajectory);
